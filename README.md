@@ -1,6 +1,7 @@
 # MarketMatch
 
 ⭐️ This program takes in a list of stocks and creates a portfolio that identifies the best combination of stocks to match the S&P500 and TSX60 index.
+
 ⭐️ Collaborated with a group of four to submit as a team project
 
 ## Features
