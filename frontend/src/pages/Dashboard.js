@@ -23,6 +23,7 @@ import {
   Timeline,
 } from '@mui/icons-material';
 import axios from 'axios';
+import { API_ENDPOINTS } from '../config/api';
 
 const Dashboard = () => {
   const [marketData, setMarketData] = useState(null);
@@ -37,7 +38,7 @@ const Dashboard = () => {
 
   const fetchMarketData = async () => {
     try {
-      const response = await axios.get('/api/market-data');
+      const response = await axios.get(API_ENDPOINTS.MARKET_DATA);
       setMarketData(response.data);
     } catch (err) {
       setError('Failed to fetch market data');

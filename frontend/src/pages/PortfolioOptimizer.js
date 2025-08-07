@@ -29,6 +29,7 @@ import {
 import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import PortfolioChart from '../components/PortfolioChart';
+import { API_ENDPOINTS } from '../config/api';
 
 const PortfolioOptimizer = () => {
   const [tickers, setTickers] = useState([]);
@@ -45,7 +46,7 @@ const PortfolioOptimizer = () => {
       formData.append('file', file);
       
       try {
-        const response = await axios.post('/api/upload-csv', formData, {
+        const response = await axios.post(API_ENDPOINTS.UPLOAD_CSV, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -76,7 +77,7 @@ const PortfolioOptimizer = () => {
     setError(null);
     
     try {
-      const response = await axios.post('/api/optimize-portfolio', {
+      const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
         tickers,
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
