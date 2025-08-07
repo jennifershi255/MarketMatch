@@ -284,7 +284,7 @@ This project was developed as an academic assignment for educational purposes. A
 
 2. **Frontend connection issues:**
 
-   - Ensure backend is running on port 5001
+   - Ensure backend is running on port 5000
    - Check proxy configuration in `package.json`
    - Clear browser cache and restart development server
 
