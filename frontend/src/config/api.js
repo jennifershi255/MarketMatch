@@ -1,4 +1,4 @@
-// API Configuration
+// API Configuration - Updated for deployment fix
 let API_BASE_URL;
 
 // Detect if we're on the deployed Vercel domain
