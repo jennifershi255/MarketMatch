@@ -90,3 +90,7 @@ private_data/
 *.pem
 *.key
 *.crt 
+generate_pdf.py
+paper.pdf
+MarketMatch_Technical_Documentation.md
+quick.md
