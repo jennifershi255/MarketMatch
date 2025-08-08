@@ -2,7 +2,7 @@
 let API_BASE_URL;
 
 // Detect if we're on the deployed Vercel domain
-if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname === 'market-match-app.vercel.app')) {
   // Force production URL for Vercel deployments
   API_BASE_URL = 'https://marketmatch-033i.onrender.com';
   console.log('Detected Vercel deployment, using production API:', API_BASE_URL);

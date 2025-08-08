@@ -12,7 +12,13 @@ import warnings
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=[
+    "http://localhost:3000",
+    "http://localhost:5000", 
+    "https://market-match-app.vercel.app",
+    "https://market-match-git-main-jennifers-projects-371c99ef.vercel.app",
+    "https://*.vercel.app"
+])
 
 class MarketMatchAnalyzer:
     def __init__(self):
