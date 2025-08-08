@@ -1,11 +1,19 @@
 // API Configuration - Updated for deployment fix
 let API_BASE_URL;
 
-// Detect if we're on the deployed Vercel domain
-if (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || window.location.hostname === 'market-match-app.vercel.app')) {
-  // Force production URL for Vercel deployments
+// Detect if we're on any Vercel domain (production or preview)
+const isVercelDeployment = typeof window !== 'undefined' && (
+  window.location.hostname.includes('vercel.app') ||
+  window.location.hostname.includes('.vercel.app') ||
+  window.location.hostname === 'market-match-app.vercel.app' ||
+  window.location.hostname.includes('jennifers-projects-371c99ef.vercel.app')
+);
+
+if (isVercelDeployment) {
+  // Force production URL for all Vercel deployments
   API_BASE_URL = 'https://marketmatch-033i.onrender.com';
   console.log('Detected Vercel deployment, using production API:', API_BASE_URL);
+  console.log('Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
 } else {
   // Use environment variable or localhost for development
   API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
