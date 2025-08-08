@@ -8,7 +8,7 @@ if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.a
   console.log('Detected Vercel deployment, using production API:', API_BASE_URL);
 } else {
   // Use environment variable or localhost for development
-  API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+  API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
   console.log('Using environment/local API:', API_BASE_URL);
 }
 

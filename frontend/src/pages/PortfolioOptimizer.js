@@ -76,16 +76,43 @@ const PortfolioOptimizer = () => {
     setLoading(true);
     setError(null);
     
+    console.log('🚀 Starting optimization...');
+    console.log('API URL:', API_ENDPOINTS.OPTIMIZE_PORTFOLIO);
+    console.log('Request data:', { tickers: tickers.slice(0, 5), num_stocks: numStocks, budget });
+    
     try {
       const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
         tickers,
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
+      }, {
+        timeout: 60000, // 60 second timeout
+        headers: {
+          'Content-Type': 'application/json',
+        }
       });
       
+      console.log('✅ Optimization successful:', response.data);
       setResults(response.data);
     } catch (err) {
-      setError('Optimization failed: ' + (err.response?.data?.error || err.message));
+      console.error('❌ Optimization error:', err);
+      console.error('Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: err.config?.url
+      });
+      
+      let errorMessage = 'Optimization failed: ';
+      if (err.code === 'NETWORK_ERROR' || err.message === 'Network Error') {
+        errorMessage += 'Cannot connect to server. Please check if the backend is running.';
+      } else if (err.code === 'ECONNABORTED') {
+        errorMessage += 'Request timeout. The operation is taking too long.';
+      } else {
+        errorMessage += (err.response?.data?.error || err.message);
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
