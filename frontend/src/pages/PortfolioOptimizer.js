@@ -94,11 +94,11 @@ const PortfolioOptimizer = () => {
       // Now do the actual optimization
       console.log('🚀 Starting actual optimization...');
       const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
-        tickers: tickers.slice(0, 20), // Limit to 20 tickers to avoid timeout
+        tickers: tickers, // Use all tickers
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
       }, {
-        timeout: 120000, // 2 minute timeout
+        timeout: 180000, // 3 minute timeout for larger datasets
         headers: {
           'Content-Type': 'application/json',
         }
