@@ -31,12 +31,13 @@ class MarketMatchAnalyzer:
         self.total_market_value = 50578000000000
         
     def count_volume(self, ticker):
-        """Calculate average monthly volume for a ticker - matches original notebook logic"""
+        """Calculate average monthly volume for a ticker - optimized version"""
         start_date_required = '2023-10-01'
         end_date_required = '2024-09-30'
         
         try:
-            ticker_hist = ticker.history(start=start_date_required, end=end_date_required)
+            # Use period='1y' for faster retrieval
+            ticker_hist = ticker.history(period='1y')
             if ticker_hist.empty:
                 return 0
             
@@ -154,7 +155,10 @@ class MarketMatchAnalyzer:
         filtered_tickers = []
         removed_stocks = []
         
-        for ticker_symbol in tickers_list:
+        print(f"🔍 Starting to filter {len(tickers_list)} tickers...")
+        for i, ticker_symbol in enumerate(tickers_list):
+            if i % 5 == 0:
+                print(f"📊 Processing ticker {i+1}/{len(tickers_list)}: {ticker_symbol}")
             try:
                 ticker = yf.Ticker(ticker_symbol)
                 history = ticker.history(start='2023-10-01', end='2024-09-30')

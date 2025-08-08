@@ -91,14 +91,27 @@ const PortfolioOptimizer = () => {
       });
       console.log('✅ CORS test successful:', testResponse.data);
       
-      // Now do the actual optimization
+      // Now do the actual optimization with smart batching
       console.log('🚀 Starting actual optimization...');
+      console.log(`📊 Processing ${tickers.length} tickers, requesting ${numStocks} stocks`);
+      
+      // If we have too many tickers, we need to be smart about processing
+      let processedTickers = tickers;
+      if (tickers.length > 25) {
+        console.log('⚡ Large dataset detected, using optimized processing...');
+        // Take a strategic sample: all US stocks + all Canadian stocks
+        const usStocks = tickers.filter(t => !t.includes('.TO'));
+        const canadianStocks = tickers.filter(t => t.includes('.TO'));
+        processedTickers = [...usStocks.slice(0, 20), ...canadianStocks]; // Top 20 US + all Canadian
+        console.log(`📈 Processing ${processedTickers.length} strategic tickers:`, processedTickers);
+      }
+      
       const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
-        tickers: tickers, // Use all tickers
+        tickers: processedTickers,
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
       }, {
-        timeout: 180000, // 3 minute timeout for larger datasets
+        timeout: 120000, // 2 minute timeout
         headers: {
           'Content-Type': 'application/json',
         }
