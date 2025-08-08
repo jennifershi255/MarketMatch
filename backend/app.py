@@ -12,13 +12,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
-CORS(app, origins=[
-    "http://localhost:3000",
-    "http://localhost:5000", 
-    "https://market-match-app.vercel.app",
-    "https://market-match-git-main-jennifers-projects-371c99ef.vercel.app",
-    "https://*.vercel.app"
-])
+CORS(app)
+
+@app.after_request
+def after_request(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
 
 class MarketMatchAnalyzer:
     def __init__(self):
