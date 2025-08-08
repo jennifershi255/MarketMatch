@@ -31,123 +31,19 @@ class MarketMatchAnalyzer:
         self.total_market_value = 50578000000000
         
     def count_volume(self, ticker):
-        """Calculate average monthly volume for a ticker - optimized version"""
-        start_date_required = '2023-10-01'
-        end_date_required = '2024-09-30'
-        
+        """Calculate average volume"""
         try:
-            # Use period='1y' for faster retrieval
-            ticker_hist = ticker.history(period='1y')
-            if ticker_hist.empty:
+            # Get recent 3 months of data for faster processing
+            ticker_hist = ticker.history(period='3mo')
+            if ticker_hist.empty or len(ticker_hist) < 10:
                 return 0
             
-            ticker_hist.index = pd.to_datetime(ticker_hist.index).strftime('%Y-%m-%d')
-            monthly_vol = []
-            months = 0
+            # Simple average volume over the period
+            avg_volume = ticker_hist['Volume'].mean()
+            return avg_volume if not np.isnan(avg_volume) else 0
             
-            while months < 12:
-                # Oct 2023
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2023-10-01') 
-                                    & (ticker_hist.index < '2023-11-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                
-                # Nov 2023
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2023-11-01')
-                                    & (ticker_hist.index < '2023-12-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                
-                # Dec 2023
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2023-12-01')
-                                    & (ticker_hist.index < '2024-01-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-
-                # Jan 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-01-01')
-                                        & (ticker_hist.index < '2024-02-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-
-                # Feb 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-02-01')
-                                        & (ticker_hist.index < '2024-03-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-
-                # March 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-03-01')
-                                        & (ticker_hist.index < '2024-04-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-
-                # April 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-04-01')
-                                        & (ticker_hist.index < '2024-05-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                
-                # May 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-05-01')
-                                        & (ticker_hist.index < '2024-06-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                
-                # June 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-06-01')
-                                        & (ticker_hist.index < '2024-07-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                
-                # July 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-07-01')
-                                        & (ticker_hist.index < '2024-08-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-
-                # Aug 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-08-01')
-                                        & (ticker_hist.index < '2024-09-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                
-                # Sept 2024
-                filtered_df = ticker_hist.loc[(ticker_hist.index >= '2024-09-01')
-                                        & (ticker_hist.index < '2024-10-01')]
-                if len(filtered_df) >= 18:
-                    monthly_vol.append(np.mean(filtered_df['Volume']))
-                    months += 1
-                    continue
-                    
-                # If no month had enough data, break to avoid infinite loop
-                break
-                    
-            return np.mean(monthly_vol) if monthly_vol else 0
         except Exception as e:
-            print(f"Error calculating volume for ticker: {str(e)}")
+            print(f"Error calculating volume for {ticker.ticker}: {str(e)}")
             return 0
     
     def remove_unwanted(self, tickers_list):
@@ -157,27 +53,30 @@ class MarketMatchAnalyzer:
         
         print(f"🔍 Starting to filter {len(tickers_list)} tickers...")
         for i, ticker_symbol in enumerate(tickers_list):
-            if i % 5 == 0:
+            if i % 3 == 0:
                 print(f"📊 Processing ticker {i+1}/{len(tickers_list)}: {ticker_symbol}")
             try:
                 ticker = yf.Ticker(ticker_symbol)
-                history = ticker.history(start='2023-10-01', end='2024-09-30')
                 
-                # Checking if it is delisted
-                if history.empty:
-                    removed_stocks.append(f"{ticker_symbol} - delisted")
+                # Get basic info and recent history in one call
+                info = ticker.info
+                history = ticker.history(period='1mo')  # Just 1 month for speed
+                
+                # Checking if it is delisted or has no recent data
+                if history.empty or len(history) < 5:
+                    removed_stocks.append(f"{ticker_symbol} - delisted or no recent data")
                     continue
                 
                 # Check if the currency is in USD or CAD
-                currency = ticker.info.get('currency')
+                currency = info.get('currency', 'Unknown')
                 if currency not in ['USD', 'CAD']:
                     removed_stocks.append(f"{ticker_symbol} - wrong currency ({currency})")
                     continue
                 
-                # Checking if the volume is less than 100000
-                volume = self.count_volume(ticker)
-                if volume < 100000:
-                    removed_stocks.append(f"{ticker_symbol} - low volume ({volume:,.0f})")
+                # Quick volume check using recent average
+                avg_volume = history['Volume'].mean()
+                if avg_volume < 100000:
+                    removed_stocks.append(f"{ticker_symbol} - low volume ({avg_volume:,.0f})")
                     continue
                 
                 # If it passes all tests, keep it

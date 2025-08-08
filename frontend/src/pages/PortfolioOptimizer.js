@@ -91,18 +91,15 @@ const PortfolioOptimizer = () => {
       });
       console.log('✅ CORS test successful:', testResponse.data);
       
-      // Now do the actual optimization with smart batching
       console.log('🚀 Starting actual optimization...');
       console.log(`📊 Processing ${tickers.length} tickers, requesting ${numStocks} stocks`);
       
-      // If we have too many tickers, we need to be smart about processing
       let processedTickers = tickers;
-      if (tickers.length > 25) {
+      if (tickers.length > 15) {
         console.log('⚡ Large dataset detected, using optimized processing...');
-        // Take a strategic sample: all US stocks + all Canadian stocks
         const usStocks = tickers.filter(t => !t.includes('.TO'));
         const canadianStocks = tickers.filter(t => t.includes('.TO'));
-        processedTickers = [...usStocks.slice(0, 20), ...canadianStocks]; // Top 20 US + all Canadian
+        processedTickers = [...usStocks.slice(0, 12), ...canadianStocks.slice(0, 6)]; // 12 US + 6 Canadian max
         console.log(`📈 Processing ${processedTickers.length} strategic tickers:`, processedTickers);
       }
       
