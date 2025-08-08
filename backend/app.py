@@ -41,7 +41,7 @@ class MarketMatchAnalyzer:
             if ticker_hist.empty:
                 return 0
             
-            ticker_hist.index = ticker_hist.index.strftime('%Y-%m-%d')
+            ticker_hist.index = pd.to_datetime(ticker_hist.index).strftime('%Y-%m-%d')
             monthly_vol = []
             months = 0
             
@@ -194,13 +194,13 @@ class MarketMatchAnalyzer:
             # S&P 500
             sp500_ticker = yf.Ticker('^GSPC')
             sp500 = sp500_ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
-            sp500.index = sp500.index.strftime('%Y-%m-%d')
+            sp500.index = pd.to_datetime(sp500.index).strftime('%Y-%m-%d')
             sp500_returns = sp500.ffill().pct_change().dropna()
             
             # TSX 60
             tsx_ticker = yf.Ticker('XIU.TO')
             tsx = tsx_ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
-            tsx.index = tsx.index.strftime('%Y-%m-%d')
+            tsx.index = pd.to_datetime(tsx.index).strftime('%Y-%m-%d')
             tsx_returns = tsx.ffill().pct_change().dropna()
             
             # Combine
