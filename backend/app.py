@@ -12,7 +12,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://market-match-app.vercel.app"])
 
 @app.after_request
 def after_request(response):
