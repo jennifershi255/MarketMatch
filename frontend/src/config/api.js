@@ -33,6 +33,7 @@ export const API_ENDPOINTS = {
   RATE_STOCKS: `${API_BASE_URL}/api/rate-stocks`,
   OPTIMIZE_PORTFOLIO: `${API_BASE_URL}/api/optimize-portfolio`,
   UPLOAD_CSV: `${API_BASE_URL}/api/upload-csv`,
+  TEST_CORS: `${API_BASE_URL}/api/test-cors`,
 };
 
 export default API_BASE_URL; 

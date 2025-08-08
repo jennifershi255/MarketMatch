@@ -81,12 +81,24 @@ const PortfolioOptimizer = () => {
     console.log('Request data:', { tickers: tickers.slice(0, 5), num_stocks: numStocks, budget });
     
     try {
+      // First test CORS with a simple request
+      console.log('🧪 Testing CORS connection...');
+      const testResponse = await axios.post(API_ENDPOINTS.TEST_CORS || `${API_ENDPOINTS.OPTIMIZE_PORTFOLIO.replace('/optimize-portfolio', '/test-cors')}`, {
+        test: true
+      }, {
+        timeout: 10000,
+        headers: { 'Content-Type': 'application/json' }
+      });
+      console.log('✅ CORS test successful:', testResponse.data);
+      
+      // Now do the actual optimization
+      console.log('🚀 Starting actual optimization...');
       const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
-        tickers,
+        tickers: tickers.slice(0, 20), // Limit to 20 tickers to avoid timeout
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
       }, {
-        timeout: 60000, // 60 second timeout
+        timeout: 120000, // 2 minute timeout
         headers: {
           'Content-Type': 'application/json',
         }

@@ -12,23 +12,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 app = Flask(__name__)
-CORS(app, origins=["https://market-match-app.vercel.app"])
-
-@app.after_request
-def after_request(response):
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-    return response
-
-@app.before_request
-def handle_preflight():
-    if request.method == "OPTIONS":
-        response = jsonify({})
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
-        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-        return response
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-Requested-With"],
+        "supports_credentials": False
+    }
+})
 
 class MarketMatchAnalyzer:
     def __init__(self):
@@ -378,6 +369,12 @@ analyzer = MarketMatchAnalyzer()
 @app.route('/api/health', methods=['GET'])
 def health_check():
     return jsonify({"status": "healthy", "message": "MarketMatch API is running"})
+
+@app.route('/api/test-cors', methods=['POST', 'OPTIONS'])
+def test_cors():
+    if request.method == 'OPTIONS':
+        return jsonify({"message": "CORS preflight successful"})
+    return jsonify({"message": "CORS POST successful", "received": request.get_json()})
 
 @app.route('/api/filter-stocks', methods=['POST'])
 def filter_stocks():
