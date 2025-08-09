@@ -213,7 +213,7 @@ const PortfolioOptimizer = () => {
                     ? 'Drop the CSV file here...'
                     : 'Drag & drop a CSV file here, or click to select'}
                 </Typography>
-                <Typography variant="body2" color="text.primary">
+                <Typography variant="body2" color="text.secondary">
                   CSV should contain stock tickers in the first column
                 </Typography>
               </Box>
@@ -302,7 +302,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         ${results.summary?.final_value?.toLocaleString()}
                       </Typography>
-                      <Typography variant="body2" color="text.primary">
+                      <Typography variant="body2" color="text.secondary">
                         Final Value
                       </Typography>
                     </Box>
@@ -312,7 +312,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         {results.summary?.portfolio_return?.toFixed(4)}%
                       </Typography>
-                      <Typography variant="body2" color="text.primary">
+                      <Typography variant="body2" color="text.secondary">
                         Portfolio Return (Snapshot)
                       </Typography>
                     </Box>
@@ -322,7 +322,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         {results.summary?.num_stocks}
                       </Typography>
-                      <Typography variant="body2" color="text.primary">
+                      <Typography variant="body2" color="text.secondary">
                         Stocks Selected
                       </Typography>
                     </Box>
@@ -332,7 +332,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         ${results.summary?.total_fees?.toFixed(2)}
                       </Typography>
-                      <Typography variant="body2" color="text.primary">
+                      <Typography variant="body2" color="text.secondary">
                         Total Fees
                       </Typography>
                     </Box>
@@ -351,7 +351,7 @@ const PortfolioOptimizer = () => {
                           <Typography variant="h6" color="primary">
                             {backtest.portfolio_return_pct}%
                           </Typography>
-                          <Typography variant="body2" color="text.primary">
+                          <Typography variant="body2" color="text.secondary">
                             Portfolio Return (3Y)
                           </Typography>
                         </Box>
@@ -361,7 +361,7 @@ const PortfolioOptimizer = () => {
                           <Typography variant="h6" color="primary">
                             {backtest.blended_return_pct}%
                           </Typography>
-                          <Typography variant="body2" color="text.primary">
+                          <Typography variant="body2" color="text.secondary">
                             Market Return (3Y)
                           </Typography>
                         </Box>
@@ -371,7 +371,7 @@ const PortfolioOptimizer = () => {
                           <Typography variant="h6" color="primary">
                             {backtest.correlation}
                           </Typography>
-                          <Typography variant="body2" color="text.primary">
+                          <Typography variant="body2" color="text.secondary">
                             Correlation vs Market
                           </Typography>
                         </Box>
@@ -400,7 +400,7 @@ const PortfolioOptimizer = () => {
 
                 <Divider sx={{ mb: 2 }} />
 
-                <Typography variant="body2" color="text.primary" gutterBottom>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
                   Filtering Results:
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
@@ -432,11 +432,11 @@ const PortfolioOptimizer = () => {
                   <Table size="small">
                     <TableHead>
                       <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                        <TableCell><strong>Ticker</strong></TableCell>
-                        <TableCell align="right"><strong>Price (CAD)</strong></TableCell>
-                        <TableCell align="right"><strong>Shares</strong></TableCell>
-                        <TableCell align="right"><strong>Value (CAD)</strong></TableCell>
-                        <TableCell align="right"><strong>Weight (%)</strong></TableCell>
+                        <TableCell color="#000000"><strong>Ticker</strong></TableCell>
+                        <TableCell align="right" color="#000000"><strong>Price (CAD)</strong></TableCell>
+                        <TableCell align="right" color="#000000"><strong>Shares</strong></TableCell>
+                        <TableCell align="right" color="#000000"><strong>Value (CAD)</strong></TableCell>
+                        <TableCell align="right" color="#000000"><strong>Weight (%)</strong></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
