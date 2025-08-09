@@ -31,7 +31,7 @@ class MarketMatchAnalyzer:
         self.total_market_value = 50578000000000
         
     def count_volume(self, ticker):
-        """Calculate average volume"""
+        """Calculate average volume - simplified for performance"""
         try:
             # Get recent 3 months of data for faster processing
             ticker_hist = ticker.history(period='3mo')
@@ -205,7 +205,95 @@ class MarketMatchAnalyzer:
         df['Weight'] = df['Weight'] * 100 / df['Weight'].sum()
         
         return df
-    
+
+    def backtest_portfolio(self, weighted_portfolio: pd.DataFrame, start_date: str = '2021-01-01', end_date: str = '2024-11-02') -> dict:
+        """Compute a 3-year backtest of the weighted portfolio (monthly)."""
+        try:
+            if weighted_portfolio.empty:
+                return {"error": "Empty portfolio for backtest"}
+
+            # Get market indices
+            sp500_ticker = yf.Ticker('^GSPC')
+            tsx_ticker = yf.Ticker('XIU.TO')
+            sp500 = sp500_ticker.history(start=start_date, end=end_date, interval='1mo')[['Close']]
+            tsx = tsx_ticker.history(start=start_date, end=end_date, interval='1mo')[['Close']]
+            sp500 = sp500.ffill().dropna()
+            tsx = tsx.ffill().dropna()
+
+            # Normalize indices
+            sp500_idx = sp500['Close'] / sp500['Close'].iloc[0]
+            tsx_idx = tsx['Close'] / tsx['Close'].iloc[0]
+            blended_idx = (sp500_idx.reindex(tsx_idx.index, method='ffill').dropna() + tsx_idx) / 2
+
+            # CAD/USD exchange rate (monthly)
+            fx = yf.Ticker('CADUSD=X').history(start=start_date, end=end_date, interval='1mo')[['Close']]
+            fx = fx.ffill().dropna()
+
+            # Build portfolio index
+            portfolio_components = []
+            weights_fraction = (weighted_portfolio[['Ticker', 'Weight']].copy())
+            weights_fraction['Weight'] = weights_fraction['Weight'] / 100.0
+
+            for _, row in weights_fraction.iterrows():
+                ticker = row['Ticker']
+                weight = row['Weight']
+                try:
+                    t = yf.Ticker(ticker)
+                    px = t.history(start=start_date, end=end_date, interval='1mo')[['Close']]
+                    if px.empty:
+                        continue
+                    px = px.ffill().dropna()
+                    # Convert to CAD if USD
+                    currency = t.info.get('currency', 'USD')
+                    if currency == 'USD':
+                        # Align fx and convert
+                        joined = px.join(fx, how='inner', rsuffix='_FX')
+                        if joined.empty:
+                            continue
+                        price_cad = joined['Close'] / joined['Close_FX']
+                    else:
+                        price_cad = px['Close']
+                    norm = price_cad / price_cad.iloc[0]
+                    portfolio_components.append(norm * weight)
+                except Exception as e:
+                    print(f"Backtest: error processing {ticker}: {e}")
+                    continue
+
+            if not portfolio_components:
+                return {"error": "No valid components for backtest"}
+
+            # Sum weighted components
+            portfolio_index = portfolio_components[0]
+            for comp in portfolio_components[1:]:
+                portfolio_index = portfolio_index.reindex(comp.index, method='ffill')
+                comp = comp.reindex(portfolio_index.index, method='ffill')
+                portfolio_index = (portfolio_index.fillna(method='ffill') + comp.fillna(method='ffill'))
+
+            # Normalize portfolio index to start at 1
+            portfolio_index = portfolio_index / portfolio_index.iloc[0]
+
+            # Align blended and portfolio
+            common_index = portfolio_index.index.intersection(blended_idx.index)
+            portfolio_index = portfolio_index.loc[common_index]
+            blended_idx = blended_idx.loc[common_index]
+
+            # Compute returns and correlation
+            portfolio_return = float((portfolio_index.iloc[-1] / portfolio_index.iloc[0] - 1) * 100)
+            blended_return = float((blended_idx.iloc[-1] / blended_idx.iloc[0] - 1) * 100)
+            correlation = float(np.corrcoef(portfolio_index.values, blended_idx.values)[0, 1])
+
+            return {
+                "dates": [d.strftime('%Y-%m-%d') if not isinstance(d, str) else d for d in common_index],
+                "portfolio_index": [float(x) for x in portfolio_index.values],
+                "blended_index": [float(x) for x in blended_idx.values],
+                "portfolio_return_pct": round(portfolio_return, 4),
+                "blended_return_pct": round(blended_return, 4),
+                "correlation": round(correlation, 4)
+            }
+        except Exception as e:
+            print(f"Backtest error: {e}")
+            return {"error": str(e)}
+
     def calculate_portfolio_performance(self, portfolio_df, budget=1000000):
         """Calculate portfolio shares and performance"""
         start_date = '2024-11-22'
@@ -351,13 +439,16 @@ def optimize_portfolio():
         # Step 4: Calculate weights
         weighted_portfolio = analyzer.calculate_weights(selected_stocks)
         
-        # Step 5: Calculate performance
+        # NEW: Backtest over 3 years
+        backtest = analyzer.backtest_portfolio(weighted_portfolio, analyzer.start_date, analyzer.end_date)
+        
+        # Step 5: Calculate performance snapshot
         portfolio_result, total_fees = analyzer.calculate_portfolio_performance(weighted_portfolio, budget)
         
         # Step 6: Get market data for comparison
         market_data, sp500, tsx = analyzer.get_market_data()
         
-        # Calculate portfolio vs market performance
+        # Calculate portfolio vs market performance (snapshot)
         total_value = portfolio_result['Value'].sum() if not portfolio_result.empty else 0
         portfolio_return = ((total_value + total_fees - budget) / budget) * 100
         
@@ -375,7 +466,8 @@ def optimize_portfolio():
                 "removed_stocks": removed_stocks,
                 "total_filtered": len(filtered_tickers),
                 "total_removed": len(removed_stocks)
-            }
+            },
+            "backtest": backtest
         })
         
     except Exception as e:

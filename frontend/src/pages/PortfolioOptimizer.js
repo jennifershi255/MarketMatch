@@ -30,6 +30,7 @@ import { useDropzone } from 'react-dropzone';
 import axios from 'axios';
 import PortfolioChart from '../components/PortfolioChart';
 import { API_ENDPOINTS } from '../config/api';
+import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 const PortfolioOptimizer = () => {
   const [tickers, setTickers] = useState([]);
@@ -37,6 +38,7 @@ const PortfolioOptimizer = () => {
   const [budget, setBudget] = useState(1000000);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
+  const [backtest, setBacktest] = useState(null);
   const [error, setError] = useState(null);
 
   const onDrop = useCallback(async (acceptedFiles) => {
@@ -116,6 +118,7 @@ const PortfolioOptimizer = () => {
       
       console.log('✅ Optimization successful:', response.data);
       setResults(response.data);
+      if (response.data.backtest) setBacktest(response.data.backtest);
     } catch (err) {
       console.error('❌ Optimization error:', err);
       console.error('Error details:', {
@@ -310,7 +313,7 @@ const PortfolioOptimizer = () => {
                         {results.summary?.portfolio_return?.toFixed(4)}%
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Portfolio Return
+                        Portfolio Return (Snapshot)
                       </Typography>
                     </Box>
                   </Grid>
@@ -335,6 +338,65 @@ const PortfolioOptimizer = () => {
                     </Box>
                   </Grid>
                 </Grid>
+
+                {backtest && !backtest.error && (
+                  <>
+                    <Divider sx={{ mb: 2 }} />
+                    <Typography variant="h6" gutterBottom>
+                      3-Year Backtest
+                    </Typography>
+                    <Grid container spacing={2} sx={{ mb: 2 }}>
+                      <Grid item xs={12} sm={4}>
+                        <Box textAlign="center">
+                          <Typography variant="h6" color="primary">
+                            {backtest.portfolio_return_pct}%
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Portfolio Return (3Y)
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Box textAlign="center">
+                          <Typography variant="h6" color="primary">
+                            {backtest.blended_return_pct}%
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Market Return (3Y)
+                          </Typography>
+                        </Box>
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Box textAlign="center">
+                          <Typography variant="h6" color="primary">
+                            {backtest.correlation}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Correlation vs Market
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    </Grid>
+
+                    <Box sx={{ height: 300 }}>
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={backtest.dates.map((d, i) => ({
+                          date: d,
+                          portfolio: backtest.portfolio_index[i],
+                          market: backtest.blended_index[i]
+                        }))}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Line type="monotone" dataKey="portfolio" stroke="#1976d2" dot={false} name="Portfolio" />
+                          <Line type="monotone" dataKey="market" stroke="#f50057" dot={false} name="Blended Market" />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </Box>
+                  </>
+                )}
 
                 <Divider sx={{ mb: 2 }} />
 
