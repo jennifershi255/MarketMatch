@@ -213,7 +213,7 @@ const PortfolioOptimizer = () => {
                     ? 'Drop the CSV file here...'
                     : 'Drag & drop a CSV file here, or click to select'}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.primary">
                   CSV should contain stock tickers in the first column
                 </Typography>
               </Box>
@@ -302,7 +302,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         ${results.summary?.final_value?.toLocaleString()}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.primary">
                         Final Value
                       </Typography>
                     </Box>
@@ -312,7 +312,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         {results.summary?.portfolio_return?.toFixed(4)}%
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.primary">
                         Portfolio Return (Snapshot)
                       </Typography>
                     </Box>
@@ -322,7 +322,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         {results.summary?.num_stocks}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.primary">
                         Stocks Selected
                       </Typography>
                     </Box>
@@ -332,7 +332,7 @@ const PortfolioOptimizer = () => {
                       <Typography variant="h6" color="primary">
                         ${results.summary?.total_fees?.toFixed(2)}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.primary">
                         Total Fees
                       </Typography>
                     </Box>
@@ -351,7 +351,7 @@ const PortfolioOptimizer = () => {
                           <Typography variant="h6" color="primary">
                             {backtest.portfolio_return_pct}%
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.primary">
                             Portfolio Return (3Y)
                           </Typography>
                         </Box>
@@ -361,7 +361,7 @@ const PortfolioOptimizer = () => {
                           <Typography variant="h6" color="primary">
                             {backtest.blended_return_pct}%
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.primary">
                             Market Return (3Y)
                           </Typography>
                         </Box>
@@ -371,7 +371,7 @@ const PortfolioOptimizer = () => {
                           <Typography variant="h6" color="primary">
                             {backtest.correlation}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.primary">
                             Correlation vs Market
                           </Typography>
                         </Box>
@@ -400,7 +400,7 @@ const PortfolioOptimizer = () => {
 
                 <Divider sx={{ mb: 2 }} />
 
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <Typography variant="body2" color="text.primary" gutterBottom>
                   Filtering Results:
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
