@@ -431,12 +431,12 @@ const PortfolioOptimizer = () => {
                 <TableContainer component={Paper} variant="outlined">
                   <Table size="small">
                     <TableHead>
-                      <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                        <TableCell color="#000000"><strong>Ticker</strong></TableCell>
-                        <TableCell align="right" color="#000000"><strong>Price (CAD)</strong></TableCell>
-                        <TableCell align="right" color="#000000"><strong>Shares</strong></TableCell>
-                        <TableCell align="right" color="#000000"><strong>Value (CAD)</strong></TableCell>
-                        <TableCell align="right" color="#000000"><strong>Weight (%)</strong></TableCell>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5', '& th, & td': { color: '#000' } }}>
+                        <TableCell sx={{ color: '#000' }}><strong>Ticker</strong></TableCell>
+                        <TableCell align="right" sx={{ color: '#000' }}><strong>Price (CAD)</strong></TableCell>
+                        <TableCell align="right" sx={{ color: '#000' }}><strong>Shares</strong></TableCell>
+                        <TableCell align="right" sx={{ color: '#000' }}><strong>Value (CAD)</strong></TableCell>
+                        <TableCell align="right" sx={{ color: '#000' }}><strong>Weight (%)</strong></TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
