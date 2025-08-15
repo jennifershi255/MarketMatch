@@ -249,29 +249,6 @@ Tracking Error = Standard Deviation of (Portfolio Returns - Benchmark Returns)
 - **S&P 500 Index**: ^GSPC ticker symbol
 - **TSX 60 Index**: XIU.TO ticker symbol
 
-## 👥 Team
-
-**Team Number: 17**
-
-| Team Member  | Role                                     |
-| ------------ | ---------------------------------------- |
-| **Jack**     | Data Analysis & Algorithm Development    |
-| **Jennifer** | Portfolio Optimization & Risk Management |
-| **Justus**   | Market Research & Validation             |
-| **Precious** | Performance Analysis & Testing           |
-
-## 🤖 AI Usage Disclosure
-
-In accordance with academic integrity guidelines, we used AI assistance for:
-
-- **Code Debugging**: Identifying and resolving issues in optimization functions
-- **Code Optimization**: Improving readability and performance while maintaining requirements
-- **CSV Export**: Implementing data export functionality for portfolio results
-
-## 📄 License
-
-This project was developed as an academic assignment for educational purposes. All market data is obtained through publicly available APIs and is used for educational analysis only.
-
 ## 🆘 Troubleshooting
 
 ### Common Issues
@@ -298,9 +275,6 @@ This project was developed as an academic assignment for educational purposes. A
    - Large ticker lists may take time to process
    - Consider reducing the number of stocks for faster analysis
    - Monitor network connection for real-time data fetching
-
-### Support
-
 For technical issues or questions about the implementation, please refer to the source code documentation and comments throughout the application files.
 
 ---
