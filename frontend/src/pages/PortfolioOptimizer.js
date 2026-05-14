@@ -34,7 +34,7 @@ import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tool
 
 const PortfolioOptimizer = () => {
   const [tickers, setTickers] = useState([]);
-  const [numStocks, setNumStocks] = useState(24);
+  const [numStocks, setNumStocks] = useState(20);
   const [budget, setBudget] = useState(1000000);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -116,22 +116,13 @@ const PortfolioOptimizer = () => {
       
       console.log('Starting actual optimization...');
       console.log(`Processing ${tickers.length} tickers, requesting ${numStocks} stocks`);
-      
-      let processedTickers = tickers;
-      if (tickers.length > 15) {
-        console.log('⚡ Large dataset detected, using optimized processing...');
-        const usStocks = tickers.filter(t => !t.includes('.TO'));
-        const canadianStocks = tickers.filter(t => t.includes('.TO'));
-        processedTickers = [...usStocks.slice(0, 12), ...canadianStocks.slice(0, 6)]; // 12 US + 6 Canadian max
-        console.log(`Processing ${processedTickers.length} strategic tickers:`, processedTickers);
-      }
-      
+
       const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
-        tickers: processedTickers,
+        tickers: tickers,
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
       }, {
-        timeout: 120000, // 2 minute timeout
+        timeout: 180000, // 3 minute timeout for larger datasets
         headers: {
           'Content-Type': 'application/json',
         }
@@ -140,6 +131,17 @@ const PortfolioOptimizer = () => {
       console.log('✅ Optimization successful:', response.data);
       setResults(response.data);
       if (response.data.backtest) setBacktest(response.data.backtest);
+      
+      // Show warning if fewer stocks than requested
+      const requested = parseInt(numStocks);
+      const actual = response.data.summary?.num_stocks || 0;
+      if (actual < requested) {
+        const warningMsg = `Note: Only ${actual} stocks were selected out of ${requested} requested. ` +
+          `Some stocks may have failed validation or insufficient data. ` +
+          `Check the processing pipeline above for details.`;
+        console.warn(warningMsg);
+        // You could also show this in the UI if needed
+      }
     } catch (err) {
       console.error('Optimization error:', err);
       console.error('Error details:', {
@@ -165,12 +167,12 @@ const PortfolioOptimizer = () => {
   };
 
   const loadSampleData = () => {
-    // Sample tickers based on the original notebook
+    // Sample tickers - balanced mix of US and Canadian stocks
     const sampleTickers = [
-      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM', 'JNJ', 'V',
-      'PG', 'UNH', 'HD', 'MA', 'BAC', 'ADBE', 'CRM', 'NFLX', 'DIS', 'CSCO',
-      'PEP', 'TMO', 'ACN', 'LLY', 'ABBV', 'CVX', 'KO', 'MRK', 'COST', 'DHR',
-      'RY.TO', 'TD.TO', 'CNR.TO', 'SU.TO', 'ENB.TO', 'CPX.TO', 'TRI.TO'
+      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 
+      'META', 'TSLA', 'JPM', 'V', 'UNH',
+      'HD', 'MA', 'JNJ', 'PG', 'BAC',
+      'RY.TO', 'TD.TO', 'ENB.TO', 'CNR.TO', 'SU.TO'
     ];
     setTickers(sampleTickers);
     setError(null);
@@ -258,15 +260,50 @@ const PortfolioOptimizer = () => {
                 Parameters
               </Typography>
               
-              <TextField
-                label="Number of Stocks"
-                type="number"
-                value={numStocks}
-                onChange={(e) => setNumStocks(e.target.value)}
-                fullWidth
-                sx={{ mb: 2 }}
-                inputProps={{ min: 1, max: 50 }}
-              />
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+                  Number of Stocks
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setNumStocks(Math.max(1, parseInt(numStocks) - 1))}
+                    disabled={parseInt(numStocks) <= 1}
+                    sx={{ minWidth: '40px', height: '56px' }}
+                  >
+                    -
+                  </Button>
+                  <TextField
+                    type="number"
+                    value={numStocks}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      if (value >= 1 && value <= 20) {
+                        setNumStocks(value);
+                      }
+                    }}
+                    fullWidth
+                    inputProps={{ 
+                      min: 1, 
+                      max: 20,
+                      style: { textAlign: 'center' }
+                    }}
+                    sx={{
+                      '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {
+                        display: 'none'
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => setNumStocks(Math.min(20, parseInt(numStocks) + 1))}
+                    disabled={parseInt(numStocks) >= 20}
+                    sx={{ minWidth: '40px', height: '56px' }}
+                  >
+                    +
+                  </Button>
+                </Box>
+              </Box>
               
               <TextField
                 label="Budget (CAD)"
@@ -553,6 +590,11 @@ const PortfolioOptimizer = () => {
                   Filtering Results:
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                  <Chip
+                    label={`${results.filtering_results?.input_count || tickers.length} Input Tickers`}
+                    color="default"
+                    size="small"
+                  />
                   <Chip
                     label={`${results.filtering_results?.total_filtered} Accepted`}
                     color="success"

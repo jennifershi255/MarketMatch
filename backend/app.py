@@ -137,28 +137,82 @@ class MarketMatchAnalyzer:
         market_returns = market_data['Total_Returns'].mean()
         
         ratings_data = []
+        failed_tickers = []
         
-        for ticker_symbol in tickers_list:
+        print(f"📊 Starting to rate {len(tickers_list)} stocks...")
+        print(f"Tickers to rate: {tickers_list}")
+        
+        for i, ticker_symbol in enumerate(tickers_list):
             try:
+                print(f"\n[{i+1}/{len(tickers_list)}] Processing {ticker_symbol}...")
                 ticker = yf.Ticker(ticker_symbol)
-                stock_data = ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
                 
-                if stock_data.empty:
+                # Try to get stock data with retries
+                stock_data = None
+                for attempt in range(2):
+                    try:
+                        stock_data = ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
+                        if not stock_data.empty:
+                            break
+                    except Exception as e:
+                        if attempt == 0:
+                            print(f"   Retry attempt {attempt + 1} for {ticker_symbol}")
+                            continue
+                        raise e
+                
+                if stock_data is None or stock_data.empty or len(stock_data) < 3:
+                    failed_tickers.append(f"{ticker_symbol} - insufficient price data (only {len(stock_data) if stock_data is not None else 0} months)")
+                    print(f"   ⚠️  FAILED: insufficient data")
                     continue
                 
                 stock_returns_df = stock_data.ffill().pct_change().dropna()
                 
-                # Market value score
-                market_cap = ticker.fast_info.get('marketCap', 0)
-                market_value_score = market_cap / self.total_market_value if market_cap else 0
+                if stock_returns_df.empty:
+                    failed_tickers.append(f"{ticker_symbol} - no returns data after processing")
+                    print(f"   ⚠️  FAILED: no returns")
+                    continue
+                
+                # Market value score - try multiple methods
+                market_cap = 0
+                try:
+                    market_cap = ticker.fast_info.get('marketCap', None)
+                except:
+                    pass
+                
+                if market_cap is None or market_cap == 0:
+                    try:
+                        info = ticker.info
+                        market_cap = info.get('marketCap', 0)
+                    except:
+                        pass
+                
+                # If still no market cap, use a default based on stock price
+                if market_cap == 0:
+                    try:
+                        last_price = stock_data['Close'].iloc[-1]
+                        market_cap = last_price * 1000000000  # Assume 1B shares as rough estimate
+                        print(f"   ⚠️  Using estimated market cap for {ticker_symbol}")
+                    except:
+                        market_cap = 1000000000  # 1B default
+                
+                market_value_score = market_cap / self.total_market_value if market_cap else 0.000001
                 
                 # Returns score
                 stock_returns = stock_returns_df['Close'].mean()
+                if np.isnan(stock_returns) or np.isinf(stock_returns):
+                    failed_tickers.append(f"{ticker_symbol} - invalid returns (NaN or Inf)")
+                    print(f"   ⚠️  FAILED: invalid returns")
+                    continue
+                    
                 returns_diff = abs(stock_returns - market_returns)
-                returns_score = 1 / returns_diff if returns_diff > 0 else 0
+                if returns_diff == 0:
+                    returns_diff = 0.0001
+                returns_score = 1 / returns_diff
                 
                 # Tracking error score
                 tracking_error = (stock_returns_df['Close'] - market_returns).std()
+                if np.isnan(tracking_error) or tracking_error == 0:
+                    tracking_error = 0.01  # Small default value
                 tracking_error_score = 1 / tracking_error if tracking_error > 0 else 0
                 
                 # Overall rating
@@ -176,10 +230,23 @@ class MarketMatchAnalyzer:
                     'Stock_Returns': stock_returns,
                     'Tracking_Error': tracking_error
                 })
+                print(f"   ✅ SUCCESS: Rating = {rating:.10f}, Market Cap = ${market_cap:,.0f}")
                 
             except Exception as e:
-                print(f"Error processing {ticker_symbol}: {str(e)}")
+                error_msg = str(e)[:200]
+                failed_tickers.append(f"{ticker_symbol} - error: {error_msg}")
+                print(f"   ❌ ERROR: {error_msg}")
                 continue
+        
+        print(f"\n{'='*60}")
+        print(f"RATING SUMMARY:")
+        print(f"  ✅ Successfully rated: {len(ratings_data)} stocks")
+        print(f"  ❌ Failed: {len(failed_tickers)} stocks")
+        if failed_tickers:
+            print(f"\nFailed tickers details:")
+            for failed in failed_tickers:
+                print(f"  - {failed}")
+        print(f"{'='*60}\n")
         
         df = pd.DataFrame(ratings_data)
         return df.sort_values(by='Rating', ascending=False) if not df.empty else df
@@ -447,25 +514,37 @@ def optimize_portfolio():
         if not tickers:
             return jsonify({"error": "No tickers provided"}), 400
         
+        print(f"\n{'='*60}")
+        print(f"PORTFOLIO OPTIMIZATION STARTED")
+        print(f"Input: {len(tickers)} tickers, requesting {num_stocks} stocks")
+        print(f"{'='*60}\n")
+        
         # Step 1: Filter stocks
         filtered_tickers, removed_stocks = analyzer.remove_unwanted(tickers)
+        print(f"\n📋 Filtering Results:")
+        print(f"   Accepted: {len(filtered_tickers)}")
+        print(f"   Removed: {len(removed_stocks)}")
         
         if not filtered_tickers:
             return jsonify({"error": "No valid stocks after filtering"}), 400
         
         # Step 2: Rate stocks
         ratings_df = analyzer.rate_stocks(filtered_tickers)
+        print(f"\n📊 Rating Results:")
+        print(f"   Successfully rated: {len(ratings_df)} stocks")
         
         if ratings_df.empty:
             return jsonify({"error": "No stocks could be rated"}), 400
         
         # Step 3: Select top stocks
-        selected_stocks = ratings_df.head(min(num_stocks, len(ratings_df)))
+        stocks_to_select = min(num_stocks, len(ratings_df))
+        selected_stocks = ratings_df.head(stocks_to_select)
+        print(f"\n✅ Selected top {len(selected_stocks)} stocks for portfolio")
         
         # Step 4: Calculate weights
         weighted_portfolio = analyzer.calculate_weights(selected_stocks)
         
-        # NEW: Backtest over 3 years
+        # NEW: Backtest over 1 year
         backtest = analyzer.backtest_portfolio(weighted_portfolio, analyzer.start_date, analyzer.end_date)
         
         # Step 5: Calculate performance snapshot
@@ -478,6 +557,11 @@ def optimize_portfolio():
         total_value = portfolio_result['Value'].sum() if not portfolio_result.empty else 0
         portfolio_return = ((total_value + total_fees - budget) / budget) * 100
         
+        print(f"\n{'='*60}")
+        print(f"OPTIMIZATION COMPLETE")
+        print(f"Final portfolio: {len(portfolio_result)} stocks")
+        print(f"{'='*60}\n")
+        
         return jsonify({
             "portfolio": portfolio_result.to_dict('records'),
             "summary": {
@@ -486,17 +570,23 @@ def optimize_portfolio():
                 "final_value": round(total_value + total_fees, 2),
                 "portfolio_return": round(portfolio_return, 4),
                 "total_weight": round(portfolio_result['Weight'].sum(), 1) if not portfolio_result.empty else 0,
-                "num_stocks": len(portfolio_result)
+                "num_stocks": len(portfolio_result),
+                "requested_stocks": num_stocks,
+                "stocks_after_filtering": len(filtered_tickers),
+                "stocks_after_rating": len(ratings_df)
             },
             "filtering_results": {
                 "removed_stocks": removed_stocks,
                 "total_filtered": len(filtered_tickers),
-                "total_removed": len(removed_stocks)
+                "total_removed": len(removed_stocks),
+                "input_count": len(tickers)
             },
             "backtest": backtest
         })
         
     except Exception as e:
+        print(f"\n❌ OPTIMIZATION ERROR: {str(e)}")
+        print(traceback.format_exc())
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
 @app.route('/api/market-data', methods=['GET'])
