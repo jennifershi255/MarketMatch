@@ -11,6 +11,7 @@ import {
   Alert,
   Fade,
   Zoom,
+  Button,
 } from '@mui/material';
 import {
   TrendingUp,
@@ -21,7 +22,11 @@ import {
   Speed,
   AutoGraph,
   Timeline,
+  ArrowForward,
 } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
 
@@ -103,394 +108,467 @@ const Dashboard = () => {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box sx={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
       {/* Hero Section */}
-      <Fade in={mounted} timeout={1000}>
-        <Box sx={{ mb: 6, textAlign: 'center' }}>
-          <Typography 
-            variant="h2" 
-            component="h1" 
-            className="neon-text animate-slide-up"
-            sx={{ 
-              fontSize: '4rem',
-              fontWeight: 700,
-              mb: 2,
-              background: 'linear-gradient(135deg, #00ff88 0%,rgb(159, 222, 159) 100%)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: 'none',
-            }}
+      <Box 
+        sx={{ 
+          position: 'relative',
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          pb: 8,
+        }}
+      >
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
           >
-            Market Match
-          </Typography>
-          <Typography 
-            variant="h5" 
-            className="animate-slide-up delay-200"
-            sx={{ 
-              color: 'text.secondary',
-              mb: 4,
-              maxWidth: '800px',
-              mx: 'auto',
-              lineHeight: 1.6,
-              fontSize: '1.2rem',
-            }}
-          >
-            Create optimized portfolios that track the S&P 500 and TSX 60 indices.
-          </Typography>
-        </Box>
-      </Fade>
+            <Box sx={{ textAlign: 'center', py: 8 }}>
+              <Typography 
+                variant="h1" 
+                component="h1" 
+                className="gradient-text-animated"
+                sx={{ 
+                  fontSize: { xs: '3rem', sm: '4rem', md: '5.5rem', lg: '6.5rem' },
+                  fontWeight: 900,
+                  mb: 3,
+                  lineHeight: 1,
+                  textShadow: '0 0 80px rgba(0, 255, 136, 0.3)',
+                }}
+              >
+                MarketMatch
+              </Typography>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+              >
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    color: 'text.secondary',
+                    mb: 5,
+                    maxWidth: '900px',
+                    mx: 'auto',
+                    lineHeight: 1.6,
+                    fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.75rem' },
+                    fontWeight: 400,
+                  }}
+                >
+                  Delivering solutions today, built with quality that empowers your tomorrow.
+                </Typography>
+              </motion.div>
 
-      {/* Market Data Overview */}
-      {loading && (
-        <Zoom in={loading} timeout={500}>
-          <Box sx={{ mb: 4 }}>
-            <Card className="futuristic-card">
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Box className="loading-dots animate-pulse" sx={{ mr: 2 }}>
-                    <Typography variant="h6" color="primary">
-                      Loading market data
-                    </Typography>
-                  </Box>
-                </Box>
-                <LinearProgress 
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <Button
+                  component={Link}
+                  to="/optimize"
+                  variant="contained"
+                  endIcon={<ArrowForward />}
                   sx={{
-                    height: 8,
-                    borderRadius: 4,
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    '& .MuiLinearProgress-bar': {
-                      background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
-                      animation: 'pulse 2s ease-in-out infinite',
+                    fontSize: { xs: '1rem', md: '1.2rem' },
+                    padding: { xs: '14px 36px', md: '18px 54px' },
+                    background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
+                    color: '#000000',
+                    fontWeight: 700,
+                    borderRadius: '50px',
+                    boxShadow: '0 10px 30px rgba(0, 255, 136, 0.4)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #4dffa6 0%, #00ff88 100%)',
+                      boxShadow: '0 15px 40px rgba(0, 255, 136, 0.6)',
+                      transform: 'translateY(-3px) scale(1.05)',
                     },
                   }}
-                />
-              </CardContent>
-            </Card>
-          </Box>
-        </Zoom>
-      )}
+                >
+                  Let's Start
+                </Button>
+              </motion.div>
 
-      {error && (
-        <Fade in={!!error} timeout={500}>
-          <Alert 
-            severity="error" 
-            sx={{ 
-              mb: 4,
-              borderRadius: 2,
-              border: '1px solid rgba(255, 68, 68, 0.3)',
-              background: 'rgba(255, 68, 68, 0.1)',
-            }}
-          >
-            {error}
-          </Alert>
-        </Fade>
-      )}
+              {/* Animated Stats Row */}
+              {marketData && (
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.6 }}
+                >
+                  <Grid container spacing={3} sx={{ mt: 8, maxWidth: '900px', mx: 'auto' }}>
+                    {[
+                      { label: 'S&P 500', value: `${marketData.performance?.sp500_return?.toFixed(2)}%`, color: '#00ff88' },
+                      { label: 'TSX 60', value: `${marketData.performance?.tsx_return?.toFixed(2)}%`, color: '#00ccff' },
+                      { label: 'Correlation', value: '98%+', color: '#ffaa00' },
+                    ].map((stat, index) => (
+                      <Grid item xs={12} sm={4} key={index}>
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
+                        >
+                          <Box 
+                            className="glass-effect"
+                            sx={{ 
+                              p: 3,
+                              borderRadius: 4,
+                              textAlign: 'center',
+                              transition: 'all 0.3s ease',
+                              '&:hover': {
+                                transform: 'translateY(-8px)',
+                                boxShadow: `0 20px 40px ${stat.color}30`,
+                              },
+                            }}
+                          >
+                            <Typography 
+                              variant="h3" 
+                              sx={{ 
+                                fontWeight: 800,
+                                color: stat.color,
+                                textShadow: `0 0 20px ${stat.color}60`,
+                                mb: 1,
+                              }}
+                            >
+                              {stat.value}
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary">
+                              {stat.label}
+                            </Typography>
+                          </Box>
+                        </motion.div>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </motion.div>
+              )}
+            </Box>
+          </motion.div>
+        </Container>
+      </Box>
 
-      {marketData && (
-        <Zoom in={!!marketData} timeout={800}>
-          <Card 
-            className="futuristic-card animate-slide-up delay-300"
-            sx={{ 
-              mb: 6, 
-              background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.1) 0%, rgba(0, 204, 106, 0.05) 100%)',
-              border: '1px solid rgba(0, 255, 136, 0.3)',
-              boxShadow: '0 0 30px rgba(0, 255, 136, 0.2)',
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography 
-                variant="h4" 
-                gutterBottom
-                className="neon-text"
-                sx={{ textAlign: 'center', mb: 4 }}
-              >
-                Market Performance Overview
-              </Typography>
-              <Grid container spacing={4}>
-                {[
-                  { label: 'S&P 500', value: marketData.performance?.sp500_return, delay: '100' },
-                  { label: 'TSX 60', value: marketData.performance?.tsx_return, delay: '200' },
-                  { label: 'Average', value: marketData.performance?.avg_return, delay: '300' },
-                ].map((item, index) => (
-                  <Grid item xs={12} md={4} key={item.label}>
-                    <Box 
-                      className={`animate-slide-up delay-${item.delay} animate-float`}
-                      sx={{ 
-                        textAlign: 'center',
-                        p: 3,
-                        borderRadius: 2,
-                        background: 'rgba(0, 255, 136, 0.05)',
-                        border: '1px solid rgba(0, 255, 136, 0.1)',
-                        transition: 'all 0.3s ease',
-                        animationDelay: `${index * 0.5}s`,
-                        '&:hover': {
-                          transform: 'translateY(-10px) scale(1.02)',
-                          boxShadow: '0 10px 25px rgba(0, 255, 136, 0.3)',
-                          borderColor: 'rgba(0, 255, 136, 0.5)',
-                        },
-                      }}
-                    >
-                      <Typography variant="h6" color="primary" sx={{ fontWeight: 600 }}>
-                        {item.label}
-                      </Typography>
-                      <Typography 
-                        variant="h3" 
-                        className="neon-text"
-                        sx={{ 
-                          fontWeight: 700,
-                          my: 1,
-                          fontSize: '2.5rem',
-                        }}
-                      >
-                        {item.value?.toFixed(2)}%
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        3-Year Return
+      {/* Rest of Dashboard Content */}
+      <Container maxWidth="xl" sx={{ py: 8, position: 'relative', zIndex: 2 }}>
+        {/* Loading State */}
+        {loading && (
+          <Zoom in={loading} timeout={500}>
+            <Box sx={{ mb: 4 }}>
+              <Card className="futuristic-card glass-effect">
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box className="loading-dots animate-pulse" sx={{ mr: 2 }}>
+                      <Typography variant="h6" color="primary">
+                        Loading market data
                       </Typography>
                     </Box>
+                  </Box>
+                  <LinearProgress 
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      '& .MuiLinearProgress-bar': {
+                        background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
+                        animation: 'pulse 2s ease-in-out infinite',
+                      },
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </Box>
+          </Zoom>
+        )}
+
+        {error && (
+          <Fade in={!!error} timeout={500}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 4,
+                borderRadius: 2,
+                border: '1px solid rgba(255, 68, 68, 0.3)',
+                background: 'rgba(255, 68, 68, 0.1)',
+              }}
+            >
+              {error}
+            </Alert>
+          </Fade>
+        )}
+
+        {/* Features Grid */}
+        <AnimatedSection>
+          <Typography 
+            variant="h2" 
+            gutterBottom 
+            align="center" 
+            sx={{ 
+              mb: 8,
+              fontWeight: 700,
+              color: 'text.primary',
+            }}
+          >
+            Advanced Features
+          </Typography>
+          
+          <Grid container spacing={4}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} md={6} key={index}>
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                >
+                  <Card 
+                    className="futuristic-card glass-effect"
+                    sx={{ 
+                      height: '100%',
+                    }}
+                  >
+                    <CardContent sx={{ p: 5, textAlign: 'center', height: '100%' }}>
+                      <Box 
+                        sx={{ 
+                          mb: 3,
+                          '& svg': {
+                            color: feature.color,
+                            filter: `drop-shadow(0 0 12px ${feature.color}70)`,
+                            animation: 'float 4s ease-in-out infinite',
+                            animationDelay: `${index * 0.5}s`,
+                          },
+                        }}
+                      >
+                        {feature.icon}
+                      </Box>
+                      <Typography 
+                        variant="h4" 
+                        gutterBottom
+                        sx={{ 
+                          fontWeight: 700,
+                          color: feature.color,
+                          mb: 3,
+                        }}
+                      >
+                        {feature.title}
+                      </Typography>
+                      <Typography 
+                        variant="body1" 
+                        color="text.secondary"
+                        sx={{ lineHeight: 1.8, fontSize: '1.1rem' }}
+                      >
+                        {feature.description}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Grid>
+            ))}
+          </Grid>
+        </AnimatedSection>
+
+        {/* Key Benefits */}
+        <AnimatedSection>
+          <Card 
+            className="futuristic-card glass-effect"
+            sx={{ mt: 10, mb: 8 }}
+          >
+            <CardContent sx={{ p: 6 }}>
+              <Typography 
+                variant="h3" 
+                gutterBottom
+                sx={{ 
+                  textAlign: 'center',
+                  mb: 6,
+                  fontWeight: 700,
+                  color: 'primary.main',
+                }}
+              >
+                Key Benefits
+              </Typography>
+              <Grid container spacing={4}>
+                {benefits.map((benefit, index) => (
+                  <Grid item xs={12} md={6} key={index}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -30 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                    >
+                      <Box 
+                        className="glass-effect"
+                        sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center',
+                          p: 3,
+                          borderRadius: 3,
+                          border: '1px solid rgba(0, 255, 136, 0.15)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            background: 'rgba(0, 255, 136, 0.1)',
+                            borderColor: 'rgba(0, 255, 136, 0.4)',
+                            transform: 'translateX(10px)',
+                          },
+                        }}
+                      >
+                        <Box sx={{ mr: 3, color: 'primary.main' }}>
+                          {benefit.icon}
+                        </Box>
+                        <Box>
+                          <Chip
+                            label={benefit.label}
+                            color={benefit.color}
+                            variant="outlined"
+                            sx={{ 
+                              mb: 1,
+                              fontWeight: 700,
+                              fontSize: '0.95rem',
+                            }}
+                          />
+                          <Typography 
+                            variant="body1" 
+                            color="text.secondary"
+                            sx={{ lineHeight: 1.7, fontSize: '1.05rem' }}
+                          >
+                            {benefit.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </motion.div>
                   </Grid>
                 ))}
               </Grid>
             </CardContent>
           </Card>
-        </Zoom>
-      )}
+        </AnimatedSection>
 
-      {/* Features Grid */}
-      <Box sx={{ mb: 6 }}>
-        <Typography 
-          variant="h3" 
-          gutterBottom 
-          align="center" 
-          className="animate-slide-up delay-400"
-          sx={{ 
-            mb: 5,
-            fontWeight: 600,
-            color: 'text.primary',
-          }}
-        >
-          Advanced Features
-        </Typography>
-        
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} md={6} key={index}>
-              <Card 
-                className={`futuristic-card animate-slide-up delay-${(index + 5) * 100}`}
-                sx={{ 
-                  height: '100%',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    borderColor: feature.color,
-                    boxShadow: `0 0 30px ${feature.color}30`,
-                  },
-                }}
-              >
-                <CardContent sx={{ p: 4, textAlign: 'center', height: '100%' }}>
-                  <Box 
-                    sx={{ 
-                      mb: 3,
-                      '& svg': {
-                        color: feature.color,
-                        filter: `drop-shadow(0 0 8px ${feature.color}60)`,
-                        animation: 'float 3s ease-in-out infinite',
-                        animationDelay: `${index * 0.5}s`,
-                      },
-                    }}
-                  >
-                    {feature.icon}
-                  </Box>
-                  <Typography 
-                    variant="h5" 
-                    gutterBottom
-                    sx={{ 
-                      fontWeight: 600,
-                      color: feature.color,
-                      mb: 2,
-                    }}
-                  >
-                    {feature.title}
-                  </Typography>
-                  <Typography 
-                    variant="body1" 
-                    color="text.secondary"
-                    sx={{ lineHeight: 1.7 }}
-                  >
-                    {feature.description}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* Key Benefits */}
-      <Card 
-        className="futuristic-card animate-slide-up delay-900"
-        sx={{ mb: 6 }}
-      >
-        <CardContent sx={{ p: 4 }}>
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            sx={{ 
-              textAlign: 'center',
-              mb: 4,
-              fontWeight: 600,
-              color: 'primary.main',
+        {/* Getting Started */}
+        <AnimatedSection>
+          <Card 
+            className="futuristic-card"
+            sx={{
+              background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.08) 0%, rgba(0, 204, 106, 0.03) 100%)',
+              border: '2px solid rgba(0, 255, 136, 0.3)',
             }}
           >
-            Highlights
-          </Typography>
-          <Grid container spacing={3}>
-            {benefits.map((benefit, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Box 
-                  className={`animate-slide-left delay-${(index + 10) * 100}`}
-                  sx={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    p: 2,
-                    borderRadius: 2,
-                    background: 'rgba(0, 255, 136, 0.03)',
-                    border: '1px solid rgba(0, 255, 136, 0.1)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      background: 'rgba(0, 255, 136, 0.08)',
-                      borderColor: 'rgba(0, 255, 136, 0.3)',
-                      transform: 'translateX(10px)',
-                    },
-                  }}
-                >
-                  <Box sx={{ mr: 2, color: 'primary.main' }}>
-                    {benefit.icon}
-                  </Box>
-                  <Box>
-                    <Chip
-                      label={benefit.label}
-                      color={benefit.color}
-                      variant="outlined"
-                      sx={{ 
-                        mb: 1,
-                        fontWeight: 600,
-                        '& .MuiChip-label': {
-                          fontSize: '0.875rem',
-                        },
-                      }}
-                    />
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.6 }}
+            <CardContent sx={{ p: 6 }}>
+              <Typography 
+                variant="h3" 
+                gutterBottom
+                className="gradient-text-animated"
+                sx={{ textAlign: 'center', mb: 6, fontWeight: 700 }}
+              >
+                Getting Started
+              </Typography>
+              <Grid container spacing={4}>
+                {[
+                  {
+                    step: '01',
+                    title: 'Portfolio Optimizer',
+                    description: 'Upload your stock tickers or use our sample data to get started.',
+                  },
+                  {
+                    step: '02',
+                    title: 'Configure Parameters',
+                    description: 'Set your portfolio parameters including number of stocks and budget.',
+                  },
+                  {
+                    step: '03',
+                    title: 'Review Results',
+                    description: 'Analyze the optimized portfolio and performance metrics.',
+                  },
+                  {
+                    step: '04',
+                    title: 'Market Analysis',
+                    description: 'Explore market trends and insights in the analysis section.',
+                  },
+                ].map((item, index) => (
+                  <Grid item xs={12} md={6} key={index}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      {benefit.description}
-                    </Typography>
-                  </Box>
-                </Box>
+                      <Box 
+                        className="glass-effect"
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          p: 4,
+                          borderRadius: 3,
+                          border: '1px solid rgba(0, 255, 136, 0.15)',
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            background: 'rgba(0, 255, 136, 0.1)',
+                            borderColor: 'rgba(0, 255, 136, 0.4)',
+                            transform: 'translateY(-5px)',
+                          },
+                        }}
+                      >
+                        <Typography
+                          variant="h2"
+                          className="gradient-text-animated"
+                          sx={{
+                            mr: 4,
+                            fontWeight: 900,
+                            fontSize: '3rem',
+                            minWidth: '80px',
+                          }}
+                        >
+                          {item.step}
+                        </Typography>
+                        <Box>
+                          <Typography 
+                            variant="h5" 
+                            sx={{ 
+                              fontWeight: 700,
+                              color: 'primary.main',
+                              mb: 2,
+                            }}
+                          >
+                            {item.title}
+                          </Typography>
+                          <Typography 
+                            variant="body1" 
+                            color="text.secondary"
+                            sx={{ lineHeight: 1.7, fontSize: '1.05rem' }}
+                          >
+                            {item.description}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </motion.div>
+                  </Grid>
+                ))}
               </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </AnimatedSection>
+      </Container>
+    </Box>
+  );
+};
 
-      {/* Getting Started */}
-      <Card 
-        className="futuristic-card animate-slide-up delay-1300"
-        sx={{
-          background: 'linear-gradient(135deg, rgba(0, 255, 136, 0.05) 0%, rgba(0, 204, 106, 0.02) 100%)',
-          border: '1px solid rgba(0, 255, 136, 0.2)',
-        }}
-      >
-        <CardContent sx={{ p: 4 }}>
-          <Typography 
-            variant="h4" 
-            gutterBottom
-            className="neon-text"
-            sx={{ textAlign: 'center', mb: 4 }}
-          >
-            Getting Started
-          </Typography>
-          <Grid container spacing={3}>
-            {[
-              {
-                step: '01',
-                title: 'Portfolio Optimizer',
-                description: 'Upload your stock tickers or use our sample data to get started.',
-              },
-              {
-                step: '02',
-                title: 'Configure Parameters',
-                description: 'Set your portfolio parameters including number of stocks and budget.',
-              },
-              {
-                step: '03',
-                title: 'Review Results',
-                description: 'Analyze the optimized portfolio and performance metrics.',
-              },
-              {
-                step: '04',
-                title: 'Market Analysis',
-                description: 'Explore market trends and insights in the analysis section.',
-              },
-            ].map((item, index) => (
-              <Grid item xs={12} md={6} key={index}>
-                <Box 
-                  className={`animate-slide-right delay-${(index + 14) * 100}`}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    p: 3,
-                    borderRadius: 2,
-                    background: 'rgba(0, 255, 136, 0.03)',
-                    border: '1px solid rgba(0, 255, 136, 0.1)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      background: 'rgba(0, 255, 136, 0.08)',
-                      borderColor: 'rgba(0, 255, 136, 0.3)',
-                      transform: 'translateY(-5px)',
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="h3"
-                    className="neon-text"
-                    sx={{
-                      mr: 3,
-                      fontWeight: 700,
-                      fontSize: '2rem',
-                      minWidth: '60px',
-                    }}
-                  >
-                    {item.step}
-                  </Typography>
-                  <Box>
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 600,
-                        color: 'primary.main',
-                        mb: 1,
-                      }}
-                    >
-                      {item.title}
-                    </Typography>
-                    <Typography 
-                      variant="body1" 
-                      color="text.secondary"
-                      sx={{ lineHeight: 1.6 }}
-                    >
-                      {item.description}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
-    </Container>
+// Helper component for animated sections
+const AnimatedSection = ({ children }) => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 40 }}
+      animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 };
 

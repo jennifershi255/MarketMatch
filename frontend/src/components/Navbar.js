@@ -52,11 +52,12 @@ const Navbar = () => {
 
   const drawer = (
     <Box
+      className="glass-effect"
       sx={{
-        width: 280,
+        width: 300,
         height: '100%',
-        background: 'linear-gradient(135deg, #1e1e2e 0%, #1a1a24 100%)',
-        backdropFilter: 'blur(10px)',
+        background: 'linear-gradient(135deg, rgba(30, 30, 46, 0.95) 0%, rgba(26, 26, 36, 0.95) 100%)',
+        backdropFilter: 'blur(20px) saturate(180%)',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -66,25 +67,24 @@ const Navbar = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          p: 2,
-          borderBottom: '1px solid rgba(0, 255, 136, 0.2)',
+          p: 3,
+          borderBottom: '2px solid rgba(0, 255, 136, 0.3)',
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <TrendingUpIcon 
             sx={{ 
-              mr: 1,
-              fontSize: 28,
+              mr: 1.5,
+              fontSize: 32,
               color: '#00ff88',
-              filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.6))',
+              filter: 'drop-shadow(0 0 10px rgba(0, 255, 136, 0.7))',
             }} 
           />
           <Typography
-            variant="h6"
+            variant="h5"
+            className="gradient-text-animated"
             sx={{
-              color: '#00ff88',
-              fontWeight: 700,
-              textShadow: '0 0 10px rgba(0, 255, 136, 0.5)',
+              fontWeight: 800,
             }}
           >
             MarketMatch
@@ -92,10 +92,13 @@ const Navbar = () => {
         </Box>
         <IconButton
           onClick={handleDrawerToggle}
+          className="btn-ripple"
           sx={{
             color: '#00ff88',
+            transition: 'all 0.3s ease',
             '&:hover': {
-              background: 'rgba(0, 255, 136, 0.1)',
+              background: 'rgba(0, 255, 136, 0.15)',
+              transform: 'rotate(90deg)',
             },
           }}
         >
@@ -103,7 +106,7 @@ const Navbar = () => {
         </IconButton>
       </Box>
       
-      <List sx={{ flexGrow: 1, pt: 2 }}>
+      <List sx={{ flexGrow: 1, pt: 3, px: 2 }}>
         {navItems.map((item, index) => (
           <ListItem
             key={item.path}
@@ -112,31 +115,34 @@ const Navbar = () => {
             onClick={handleMobileNavClick}
             className={mounted ? `animate-slide-right delay-${(index + 1) * 100}` : ''}
             sx={{
-              mx: 2,
-              mb: 1,
-              borderRadius: 2,
+              mb: 2,
+              borderRadius: 3,
               color: isActive(item.path) ? '#00ff88' : '#b3b3cc',
               background: isActive(item.path) 
-                ? 'rgba(0, 255, 136, 0.1)' 
+                ? 'rgba(0, 255, 136, 0.15)' 
                 : 'transparent',
               border: isActive(item.path) 
-                ? '1px solid rgba(0, 255, 136, 0.3)' 
-                : '1px solid transparent',
-              transition: 'all 0.3s ease',
+                ? '2px solid rgba(0, 255, 136, 0.4)' 
+                : '2px solid transparent',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               textDecoration: 'none',
+              boxShadow: isActive(item.path) 
+                ? '0 4px 20px rgba(0, 255, 136, 0.25)' 
+                : 'none',
               '&:hover': {
                 color: '#00ff88',
-                background: 'rgba(0, 255, 136, 0.1)',
-                borderColor: 'rgba(0, 255, 136, 0.3)',
-                transform: 'translateX(10px)',
+                background: 'rgba(0, 255, 136, 0.15)',
+                borderColor: 'rgba(0, 255, 136, 0.5)',
+                transform: 'translateX(15px) scale(1.02)',
+                boxShadow: '0 6px 24px rgba(0, 255, 136, 0.35)',
               },
             }}
           >
             <ListItemText 
               primary={item.label}
               primaryTypographyProps={{
-                fontWeight: isActive(item.path) ? 600 : 500,
-                fontSize: '1rem',
+                fontWeight: isActive(item.path) ? 700 : 600,
+                fontSize: '1.1rem',
               }}
             />
           </ListItem>
@@ -150,58 +156,61 @@ const Navbar = () => {
       <AppBar 
         position="sticky" 
         elevation={0}
+        className="glass-effect"
         sx={{
           background: trigger 
-            ? 'linear-gradient(135deg, rgba(30, 30, 46, 0.95) 0%, rgba(26, 26, 36, 0.95) 100%)'
-            : 'linear-gradient(135deg, #1e1e2e 0%, #1a1a24 100%)',
-          backdropFilter: 'blur(10px)',
+            ? 'rgba(30, 30, 46, 0.85)'
+            : 'rgba(30, 30, 46, 0.7)',
+          backdropFilter: 'blur(20px) saturate(180%)',
           borderBottom: trigger 
-            ? '1px solid rgba(0, 255, 136, 0.3)'
+            ? '1px solid rgba(0, 255, 136, 0.4)'
             : '1px solid rgba(255, 255, 255, 0.1)',
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
           boxShadow: trigger 
-            ? '0 4px 20px rgba(0, 255, 136, 0.15)'
-            : '0 4px 20px rgba(0, 0, 0, 0.3)',
+            ? '0 8px 32px rgba(0, 255, 136, 0.2), 0 0 60px rgba(0, 255, 136, 0.1)'
+            : '0 4px 30px rgba(0, 0, 0, 0.4)',
         }}
       >
-        <Toolbar sx={{ px: { xs: 2, md: 4 } }}>
+        <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5 }}>
           {/* Logo Section */}
           <Box
             sx={{
               display: 'flex',
               alignItems: 'center',
               flexGrow: 1,
-              transition: 'all 0.3s ease',
+              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               '&:hover': {
-                transform: 'scale(1.05)',
+                transform: 'scale(1.05) translateY(-2px)',
               },
             }}
           >
             <TrendingUpIcon 
               sx={{ 
                 mr: 2,
-                fontSize: 32,
+                fontSize: 36,
                 color: '#00ff88',
-                filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.6))',
+                filter: 'drop-shadow(0 0 12px rgba(0, 255, 136, 0.7))',
                 animation: mounted ? 'float 3s ease-in-out infinite' : 'none',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  filter: 'drop-shadow(0 0 20px rgba(0, 255, 136, 1))',
+                },
               }} 
             />
             <Typography
               variant="h5"
               component={Link}
               to="/"
-              className={mounted ? 'neon-text animated-underline' : ''}
+              className={mounted ? 'gradient-text-animated' : ''}
               sx={{
                 textDecoration: 'none',
-                color: '#00ff88',
-                fontWeight: 700,
-                fontSize: { xs: '1.2rem', sm: '1.5rem' },
+                fontWeight: 800,
+                fontSize: { xs: '1.3rem', sm: '1.6rem' },
                 letterSpacing: '0.5px',
-                textShadow: '0 0 10px rgba(0, 255, 136, 0.5)',
-                transition: 'all 0.3s ease',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  textShadow: '0 0 15px rgba(0, 255, 136, 0.8)',
-                  transform: 'translateY(-1px)',
+                  transform: 'translateY(-2px)',
+                  filter: 'drop-shadow(0 0 20px rgba(0, 255, 136, 0.5))',
                 },
               }}
             >
@@ -211,34 +220,34 @@ const Navbar = () => {
           
           {/* Desktop Navigation */}
           {!isMobile && (
-            <Box sx={{ display: 'flex', gap: 1, ml: 'auto' }}>
+            <Box sx={{ display: 'flex', gap: 1.5, ml: 'auto' }}>
               {navItems.map((item, index) => (
                 <Button
                   key={item.path}
                   color="inherit"
                   component={Link}
                   to={item.path}
-                  className={mounted ? `animate-slide-right delay-${(index + 1) * 100}` : ''}
+                  className={`btn-ripple ${mounted ? `animate-slide-right delay-${(index + 1) * 100}` : ''}`}
                   sx={{
                     color: isActive(item.path) ? '#00ff88' : '#b3b3cc',
-                    fontWeight: isActive(item.path) ? 600 : 500,
-                    fontSize: '0.875rem',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
+                    fontWeight: isActive(item.path) ? 700 : 600,
+                    fontSize: '1rem',
+                    padding: '10px 24px',
+                    borderRadius: '12px',
                     textTransform: 'none',
                     position: 'relative',
                     overflow: 'hidden',
                     border: isActive(item.path) 
-                      ? '1px solid rgba(0, 255, 136, 0.3)' 
-                      : '1px solid transparent',
+                      ? '2px solid rgba(0, 255, 136, 0.4)' 
+                      : '2px solid transparent',
                     background: isActive(item.path) 
-                      ? 'rgba(0, 255, 136, 0.1)' 
+                      ? 'rgba(0, 255, 136, 0.15)' 
                       : 'transparent',
-                    backdropFilter: isActive(item.path) ? 'blur(5px)' : 'none',
+                    backdropFilter: isActive(item.path) ? 'blur(10px)' : 'none',
                     boxShadow: isActive(item.path) 
-                      ? '0 0 15px rgba(0, 255, 136, 0.2)' 
+                      ? '0 4px 20px rgba(0, 255, 136, 0.25)' 
                       : 'none',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -246,18 +255,21 @@ const Navbar = () => {
                       left: '-100%',
                       width: '100%',
                       height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.1), transparent)',
-                      transition: 'left 0.5s',
+                      background: 'linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent)',
+                      transition: 'left 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                     },
                     '&:hover': {
                       color: '#00ff88',
-                      backgroundColor: 'rgba(0, 255, 136, 0.1)',
-                      borderColor: 'rgba(0, 255, 136, 0.3)',
-                      boxShadow: '0 0 20px rgba(0, 255, 136, 0.3)',
-                      transform: 'translateY(-2px)',
+                      backgroundColor: 'rgba(0, 255, 136, 0.15)',
+                      borderColor: 'rgba(0, 255, 136, 0.5)',
+                      boxShadow: '0 6px 24px rgba(0, 255, 136, 0.35)',
+                      transform: 'translateY(-3px) scale(1.05)',
                       '&::before': {
                         left: '100%',
                       },
+                    },
+                    '&:active': {
+                      transform: 'translateY(-1px) scale(1.02)',
                     },
                     '&::after': {
                       content: '""',
@@ -265,11 +277,12 @@ const Navbar = () => {
                       bottom: 0,
                       left: '50%',
                       width: isActive(item.path) ? '80%' : '0%',
-                      height: '2px',
-                      background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
+                      height: '3px',
+                      background: 'linear-gradient(90deg, #00ff88 0%, #00ccff 100%)',
                       transform: 'translateX(-50%)',
-                      transition: 'width 0.3s ease',
-                      borderRadius: '1px',
+                      transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                      borderRadius: '2px',
+                      boxShadow: '0 0 10px rgba(0, 255, 136, 0.8)',
                     },
                     '&:hover::after': {
                       width: '80%',
@@ -289,15 +302,18 @@ const Navbar = () => {
               aria-label="open drawer"
               edge="end"
               onClick={handleDrawerToggle}
+              className="btn-ripple"
               sx={{
                 ml: 'auto',
                 color: '#00ff88',
-                border: '1px solid rgba(0, 255, 136, 0.3)',
-                borderRadius: 2,
+                border: '2px solid rgba(0, 255, 136, 0.4)',
+                borderRadius: 3,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  background: 'rgba(0, 255, 136, 0.1)',
+                  background: 'rgba(0, 255, 136, 0.15)',
                   borderColor: '#00ff88',
-                  boxShadow: '0 0 15px rgba(0, 255, 136, 0.3)',
+                  boxShadow: '0 4px 20px rgba(0, 255, 136, 0.4)',
+                  transform: 'scale(1.1)',
                 },
               }}
             >
@@ -313,10 +329,11 @@ const Navbar = () => {
             bottom: 0,
             left: 0,
             width: '100%',
-            height: '1px',
-            background: 'linear-gradient(90deg, transparent, #00ff88, transparent)',
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent, #00ff88, #00ccff, #00ff88, transparent)',
             opacity: trigger ? 1 : 0,
-            transition: 'opacity 0.3s ease',
+            transition: 'opacity 0.4s ease',
+            boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
           }}
         />
       </AppBar>
@@ -328,7 +345,7 @@ const Navbar = () => {
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
+          keepMounted: true,
         }}
         sx={{
           display: { xs: 'block', md: 'none' },
@@ -337,8 +354,8 @@ const Navbar = () => {
             border: 'none',
           },
           '& .MuiBackdrop-root': {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            backdropFilter: 'blur(5px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(8px)',
           },
         }}
       >
