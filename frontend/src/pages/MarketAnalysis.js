@@ -193,7 +193,7 @@ const MarketAnalysis = () => {
           {tabValue === 0 && (
             <Box>
               <Typography variant="h6" gutterBottom align="center">
-                S&P 500 and TSX 60 Price Performance (2023-2024)
+                S&P 500 and TSX 60 Price Performance
               </Typography>
               <ResponsiveContainer width="100%" height={500}>
                 <LineChart data={chartData}>
