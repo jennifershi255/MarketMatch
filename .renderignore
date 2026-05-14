@@ -1,0 +1,53 @@
+# Render Ignore File
+# Files and directories to exclude from Render deployments
+
+# Development files
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation (not needed for runtime)
+*.md
+docs/
+
+# Jupyter notebooks
+*.ipynb
+
+# Test files
+tests/
+test_*.py
+*_test.py
+
+# Frontend node_modules (will be installed during build)
+frontend/node_modules/
+
+# Frontend build artifacts (will be generated)
+frontend/build/
+
+# Environment files (will be set via Render dashboard)
+.env
+.env.local
+.env.development
+
+# CI/CD
+.github/

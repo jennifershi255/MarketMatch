@@ -60,7 +60,7 @@ const PortfolioOptimizer = () => {
     } else {
       setLoadingMessageIndex(0); // Reset when not loading
     }
-  }, [loading]);
+  }, [loading, loadingMessages.length]);
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0];

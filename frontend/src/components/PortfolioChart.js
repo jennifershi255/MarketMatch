@@ -9,7 +9,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
 } from 'recharts';
 import { Box, Grid, Typography, Card, CardContent, Fade } from '@mui/material';
@@ -123,14 +122,6 @@ const PortfolioChart = ({ data }) => {
       );
     }
     return null;
-  };
-
-  // Custom label for pie chart
-  const renderLabel = ({ weight, ticker }) => {
-    if (weight > 3) { // Only show labels for weights > 3%
-      return `${ticker} (${weight}%)`;
-    }
-    return '';
   };
 
   const stats = [

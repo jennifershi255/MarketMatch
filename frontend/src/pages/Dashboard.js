@@ -33,7 +33,6 @@ import axios from 'axios';
 import { API_ENDPOINTS } from '../config/api';
 
 const Dashboard = () => {
-  const [marketData, setMarketData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,8 +42,8 @@ const Dashboard = () => {
 
   const fetchMarketData = async () => {
     try {
-      const response = await axios.get(API_ENDPOINTS.MARKET_DATA);
-      setMarketData(response.data);
+      await axios.get(API_ENDPOINTS.MARKET_DATA);
+      // Market data fetched successfully
     } catch (err) {
       setError('Failed to fetch market data');
       console.error('Market data fetch error:', err);
@@ -276,61 +275,6 @@ const Dashboard = () => {
                   </Button>
                 </Box>
               </motion.div>
-
-
-              {/* Animated Stats Row */}
-              {marketData && (
-                <motion.div
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.6 }}
-                >
-                  <Grid container spacing={3} sx={{ mt: 8, maxWidth: '900px', mx: 'auto' }}>
-                    {[
-                      { label: 'S&P 500', value: `${marketData.performance?.sp500_return?.toFixed(2)}%`, color: '#00ff88' },
-                      { label: 'TSX 60', value: `${marketData.performance?.tsx_return?.toFixed(2)}%`, color: '#00ccff' },
-                      { label: 'Correlation', value: '98%+', color: '#ffaa00' },
-                    ].map((stat, index) => (
-                      <Grid item xs={12} sm={4} key={index}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.6, delay: 0.8 + index * 0.1 }}
-                        >
-                          <Box 
-                            className="glass-effect"
-                            sx={{ 
-                              p: 3,
-                              borderRadius: 4,
-                              textAlign: 'center',
-                              transition: 'all 0.3s ease',
-                              '&:hover': {
-                                transform: 'translateY(-8px)',
-                                boxShadow: `0 20px 40px ${stat.color}30`,
-                              },
-                            }}
-                          >
-                            <Typography 
-                              variant="h3" 
-                              sx={{ 
-                                fontWeight: 800,
-                                color: stat.color,
-                                textShadow: `0 0 20px ${stat.color}60`,
-                                mb: 1,
-                              }}
-                            >
-                              {stat.value}
-                            </Typography>
-                            <Typography variant="body1" color="text.secondary">
-                              {stat.label}
-                            </Typography>
-                          </Box>
-                        </motion.div>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </motion.div>
-              )}
             </Box>
           </motion.div>
         </Container>

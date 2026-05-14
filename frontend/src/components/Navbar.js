@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -22,7 +22,6 @@ const Navbar = () => {
   const location = useLocation();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  const [mounted, setMounted] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const trigger = useScrollTrigger({
     disableHysteresis: true,
@@ -30,10 +29,6 @@ const Navbar = () => {
   });
 
   const isActive = (path) => location.pathname === path;
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);

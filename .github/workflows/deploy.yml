@@ -1,45 +1,26 @@
-name: Deploy to Production
+name: Deploy Backend to Render
 
 on:
   push:
     branches:
-      - main  # Only trigger deployment on push to main branch
+      - main
 
 jobs:
-  deploy-frontend:
-    name: Deploy Frontend to Vercel
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./frontend
-          vercel-args: '--prod'
-      
-      - name: Frontend deployment complete
-        run: echo "✅ Frontend deployed to Vercel!"
-
   deploy-backend:
-    name: Deploy Backend to Render
+    name: Deploy Backend
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       
-      - name: Trigger Render Deploy
+      - name: Trigger Backend Deploy Hook
         run: |
-          echo "Triggering Render deployment for backend..."
+          echo "🚀 Deploying backend to Render..."
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-          echo "✅ Backend deployment triggered on Render!"
-      
-      - name: Backend deployment complete
-        run: echo "✅ Backend deploy hook sent to Render!"
+          echo "✅ Backend deployment triggered!"
+          echo ""
+          echo "📝 Frontend will auto-deploy separately (no hook needed)"
+
+
 
