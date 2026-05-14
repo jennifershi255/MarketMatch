@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -34,12 +34,33 @@ import { ResponsiveContainer, LineChart, Line, CartesianGrid, XAxis, YAxis, Tool
 
 const PortfolioOptimizer = () => {
   const [tickers, setTickers] = useState([]);
-  const [numStocks, setNumStocks] = useState(24);
+  const [numStocks, setNumStocks] = useState(20);
   const [budget, setBudget] = useState(1000000);
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [backtest, setBacktest] = useState(null);
   const [error, setError] = useState(null);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
+
+  const loadingMessages = [
+    "Analyzing stocks and calculating optimal weights...",
+    "This should only take a bit longer...",
+    "Evaluating market data and performance metrics...",
+    "Finalizing your optimized portfolio..."
+  ];
+
+  // Rotate loading messages
+  useEffect(() => {
+    if (loading) {
+      const interval = setInterval(() => {
+        setLoadingMessageIndex((prev) => (prev + 1) % loadingMessages.length);
+      }, 7000); // Change message every 7 seconds
+      
+      return () => clearInterval(interval);
+    } else {
+      setLoadingMessageIndex(0); // Reset when not loading
+    }
+  }, [loading, loadingMessages.length]);
 
   const onDrop = useCallback(async (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -78,7 +99,7 @@ const PortfolioOptimizer = () => {
     setLoading(true);
     setError(null);
     
-    console.log('🚀 Starting optimization...');
+    console.log('Starting optimization...');
     console.log('API URL:', API_ENDPOINTS.OPTIMIZE_PORTFOLIO);
     console.log('Request data:', { tickers: tickers.slice(0, 5), num_stocks: numStocks, budget });
     
@@ -93,24 +114,15 @@ const PortfolioOptimizer = () => {
       });
       console.log('✅ CORS test successful:', testResponse.data);
       
-      console.log('🚀 Starting actual optimization...');
-      console.log(`📊 Processing ${tickers.length} tickers, requesting ${numStocks} stocks`);
-      
-      let processedTickers = tickers;
-      if (tickers.length > 15) {
-        console.log('⚡ Large dataset detected, using optimized processing...');
-        const usStocks = tickers.filter(t => !t.includes('.TO'));
-        const canadianStocks = tickers.filter(t => t.includes('.TO'));
-        processedTickers = [...usStocks.slice(0, 12), ...canadianStocks.slice(0, 6)]; // 12 US + 6 Canadian max
-        console.log(`📈 Processing ${processedTickers.length} strategic tickers:`, processedTickers);
-      }
-      
+      console.log('Starting actual optimization...');
+      console.log(`Processing ${tickers.length} tickers, requesting ${numStocks} stocks`);
+
       const response = await axios.post(API_ENDPOINTS.OPTIMIZE_PORTFOLIO, {
-        tickers: processedTickers,
+        tickers: tickers,
         num_stocks: parseInt(numStocks),
         budget: parseFloat(budget),
       }, {
-        timeout: 120000, // 2 minute timeout
+        timeout: 180000, // 3 minute timeout for larger datasets
         headers: {
           'Content-Type': 'application/json',
         }
@@ -119,8 +131,19 @@ const PortfolioOptimizer = () => {
       console.log('✅ Optimization successful:', response.data);
       setResults(response.data);
       if (response.data.backtest) setBacktest(response.data.backtest);
+      
+      // Show warning if fewer stocks than requested
+      const requested = parseInt(numStocks);
+      const actual = response.data.summary?.num_stocks || 0;
+      if (actual < requested) {
+        const warningMsg = `Note: Only ${actual} stocks were selected out of ${requested} requested. ` +
+          `Some stocks may have failed validation or insufficient data. ` +
+          `Check the processing pipeline above for details.`;
+        console.warn(warningMsg);
+        // You could also show this in the UI if needed
+      }
     } catch (err) {
-      console.error('❌ Optimization error:', err);
+      console.error('Optimization error:', err);
       console.error('Error details:', {
         message: err.message,
         response: err.response?.data,
@@ -144,12 +167,12 @@ const PortfolioOptimizer = () => {
   };
 
   const loadSampleData = () => {
-    // Sample tickers based on the original notebook
+    // Sample tickers - balanced mix of US and Canadian stocks
     const sampleTickers = [
-      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM', 'JNJ', 'V',
-      'PG', 'UNH', 'HD', 'MA', 'BAC', 'ADBE', 'CRM', 'NFLX', 'DIS', 'CSCO',
-      'PEP', 'TMO', 'ACN', 'LLY', 'ABBV', 'CVX', 'KO', 'MRK', 'COST', 'DHR',
-      'RY.TO', 'TD.TO', 'CNR.TO', 'SU.TO', 'ENB.TO', 'CPX.TO', 'TRI.TO'
+      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 
+      'META', 'TSLA', 'JPM', 'V', 'UNH',
+      'HD', 'MA', 'JNJ', 'PG', 'BAC',
+      'RY.TO', 'TD.TO', 'ENB.TO', 'CNR.TO', 'SU.TO'
     ];
     setTickers(sampleTickers);
     setError(null);
@@ -237,15 +260,50 @@ const PortfolioOptimizer = () => {
                 Parameters
               </Typography>
               
-              <TextField
-                label="Number of Stocks"
-                type="number"
-                value={numStocks}
-                onChange={(e) => setNumStocks(e.target.value)}
-                fullWidth
-                sx={{ mb: 2 }}
-                inputProps={{ min: 1, max: 50 }}
-              />
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary' }}>
+                  Number of Stocks
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setNumStocks(Math.max(1, parseInt(numStocks) - 1))}
+                    disabled={parseInt(numStocks) <= 1}
+                    sx={{ minWidth: '40px', height: '56px' }}
+                  >
+                    -
+                  </Button>
+                  <TextField
+                    type="number"
+                    value={numStocks}
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      if (value >= 1 && value <= 20) {
+                        setNumStocks(value);
+                      }
+                    }}
+                    fullWidth
+                    inputProps={{ 
+                      min: 1, 
+                      max: 20,
+                      style: { textAlign: 'center' }
+                    }}
+                    sx={{
+                      '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {
+                        display: 'none'
+                      }
+                    }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => setNumStocks(Math.min(20, parseInt(numStocks) + 1))}
+                    disabled={parseInt(numStocks) >= 20}
+                    sx={{ minWidth: '40px', height: '56px' }}
+                  >
+                    +
+                  </Button>
+                </Box>
+              </Box>
               
               <TextField
                 label="Budget (CAD)"
@@ -279,6 +337,144 @@ const PortfolioOptimizer = () => {
             </Alert>
           )}
 
+          {loading && (
+            <Card>
+              <CardContent>
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    alignItems: 'center', 
+                    justifyContent: 'center',
+                    minHeight: '400px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Animated background circles */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      width: '300px',
+                      height: '300px',
+                      borderRadius: '50%',
+                      background: 'radial-gradient(circle, rgba(0, 255, 136, 0.1) 0%, transparent 70%)',
+                      animation: 'pulse 2s ease-in-out infinite',
+                      '@keyframes pulse': {
+                        '0%, 100%': {
+                          transform: 'scale(1)',
+                          opacity: 0.5,
+                        },
+                        '50%': {
+                          transform: 'scale(1.2)',
+                          opacity: 0.8,
+                        },
+                      },
+                    }}
+                  />
+                  
+                  {/* Main spinner with gradient */}
+                  <Box sx={{ position: 'relative', display: 'inline-flex', mb: 3 }}>
+                    <CircularProgress
+                      size={80}
+                      thickness={4}
+                      sx={{
+                        color: '#00ff88',
+                        animationDuration: '1.5s',
+                        filter: 'drop-shadow(0 0 8px rgba(0, 255, 136, 0.6))',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0,
+                        position: 'absolute',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Assessment 
+                        sx={{ 
+                          fontSize: 32, 
+                          color: '#00ff88',
+                          animation: 'rotate 3s linear infinite',
+                          '@keyframes rotate': {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                          },
+                        }} 
+                      />
+                    </Box>
+                  </Box>
+
+                  {/* Animated text */}
+                  <Typography 
+                    variant="h5" 
+                    sx={{ 
+                      mb: 2,
+                      fontWeight: 600,
+                      color: '#00ff88',
+                      animation: 'fadeInOut 2s ease-in-out infinite',
+                      '@keyframes fadeInOut': {
+                        '0%, 100%': { opacity: 0.5 },
+                        '50%': { opacity: 1 },
+                      },
+                    }}
+                  >
+                    Optimizing Portfolio...
+                  </Typography>
+                  
+                  {/* Progress steps */}
+                  <Box sx={{ textAlign: 'center', maxWidth: '300px' }}>
+                    <Typography 
+                      key={loadingMessageIndex}
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{
+                        animation: 'slideIn 0.6s ease-in-out',
+                        '@keyframes slideIn': {
+                          '0%': { opacity: 0, transform: 'translateY(10px)' },
+                          '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                      }}
+                    >
+                      {loadingMessages[loadingMessageIndex]}
+                    </Typography>
+                  </Box>
+
+                  {/* Decorative dots */}
+                  <Box sx={{ display: 'flex', gap: 1, mt: 3 }}>
+                    {[0, 1, 2].map((i) => (
+                      <Box
+                        key={i}
+                        sx={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: '50%',
+                          bgcolor: '#00ff88',
+                          animation: `bounce 1.4s ease-in-out ${i * 0.2}s infinite`,
+                          '@keyframes bounce': {
+                            '0%, 80%, 100%': {
+                              transform: 'translateY(0)',
+                              opacity: 0.5,
+                            },
+                            '40%': {
+                              transform: 'translateY(-10px)',
+                              opacity: 1,
+                            },
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          )}
+
           {results && (
             <Card>
               <CardContent>
@@ -297,7 +493,7 @@ const PortfolioOptimizer = () => {
                 </Box>
 
                 <Grid container spacing={2} sx={{ mb: 3 }}>
-                  <Grid item xs={6}>
+                  <Grid item xs={4}>
                     <Box textAlign="center">
                       <Typography variant="h6" color="primary">
                         ${results.summary?.final_value?.toLocaleString()}
@@ -307,17 +503,7 @@ const PortfolioOptimizer = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
-                    <Box textAlign="center">
-                      <Typography variant="h6" color="primary">
-                        {results.summary?.portfolio_return?.toFixed(4)}%
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Portfolio Return (Snapshot)
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={4}>
                     <Box textAlign="center">
                       <Typography variant="h6" color="primary">
                         {results.summary?.num_stocks}
@@ -327,7 +513,7 @@ const PortfolioOptimizer = () => {
                       </Typography>
                     </Box>
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={4}>
                     <Box textAlign="center">
                       <Typography variant="h6" color="primary">
                         ${results.summary?.total_fees?.toFixed(2)}
@@ -343,7 +529,7 @@ const PortfolioOptimizer = () => {
                   <>
                     <Divider sx={{ mb: 2 }} />
                     <Typography variant="h6" gutterBottom>
-                      3-Year Backtest
+                      1-Year Backtest
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
                       <Grid item xs={12} sm={4}>
@@ -352,7 +538,7 @@ const PortfolioOptimizer = () => {
                             {backtest.portfolio_return_pct}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Portfolio Return (3Y)
+                            Portfolio Return (1Y)
                           </Typography>
                         </Box>
                       </Grid>
@@ -362,7 +548,7 @@ const PortfolioOptimizer = () => {
                             {backtest.blended_return_pct}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Market Return (3Y)
+                            Market Return (1Y)
                           </Typography>
                         </Box>
                       </Grid>
@@ -404,6 +590,11 @@ const PortfolioOptimizer = () => {
                   Filtering Results:
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
+                  <Chip
+                    label={`${results.filtering_results?.input_count || tickers.length} Input Tickers`}
+                    color="default"
+                    size="small"
+                  />
                   <Chip
                     label={`${results.filtering_results?.total_filtered} Accepted`}
                     color="success"

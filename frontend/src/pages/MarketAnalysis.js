@@ -141,7 +141,7 @@ const MarketAnalysis = () => {
                 {marketData?.performance?.sp500_return?.toFixed(2)}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                3-Year Total Return
+                1-Year Total Return
               </Typography>
             </CardContent>
           </Card>
@@ -156,7 +156,7 @@ const MarketAnalysis = () => {
                 {marketData?.performance?.tsx_return?.toFixed(2)}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                3-Year Total Return
+                1-Year Total Return
               </Typography>
             </CardContent>
           </Card>
@@ -171,7 +171,7 @@ const MarketAnalysis = () => {
                 {marketData?.performance?.avg_return?.toFixed(2)}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                3-Year Total Return
+                1-Year Total Return
               </Typography>
             </CardContent>
           </Card>
@@ -193,7 +193,7 @@ const MarketAnalysis = () => {
           {tabValue === 0 && (
             <Box>
               <Typography variant="h6" gutterBottom align="center">
-                S&P 500 and TSX 60 Price Performance (2021-2024)
+                S&P 500 and TSX 60 Price Performance (2023-2024)
               </Typography>
               <ResponsiveContainer width="100%" height={500}>
                 <LineChart data={chartData}>
@@ -344,8 +344,8 @@ const MarketAnalysis = () => {
                 stable portfolios that track market performance effectively.
               </Typography>
               <Typography variant="body2">
-                <strong>Long-term Growth:</strong> The 3-year performance demonstrates the potential 
-                for sustained growth through market cycle optimization.
+                <strong>Long-term Growth:</strong> The 1-year performance demonstrates recent market trends
+                and provides insights for short-term portfolio optimization.
               </Typography>
             </CardContent>
           </Card>

@@ -1,0 +1,26 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Trigger Backend Deploy Hook
+        run: |
+          echo "🚀 Deploying backend to Render..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          echo "✅ Backend deployment triggered!"
+          echo ""
+          echo "📝 Frontend will auto-deploy separately (no hook needed)"
+
+
+

@@ -249,6 +249,42 @@ Tracking Error = Standard Deviation of (Portfolio Returns - Benchmark Returns)
 - **S&P 500 Index**: ^GSPC ticker symbol
 - **TSX 60 Index**: XIU.TO ticker symbol
 
+## 🚀 Deployment
+
+MarketMatch is deployed on **Render** for both frontend and backend services.
+
+### Quick Deploy
+
+1. **Using Render Blueprint** (Recommended):
+   - Push the `render.yaml` file to your main branch
+   - Go to [Render Dashboard](https://dashboard.render.com)
+   - Click "New" → "Blueprint"
+   - Select your GitHub repository
+   - Render will automatically create both services
+   - Update the `REACT_APP_API_URL` in frontend service with your backend URL
+
+2. **Manual Deploy**:
+   - See detailed instructions in `RENDER_DEPLOYMENT.md`
+
+### Automatic Deployments
+
+- GitHub Actions automatically deploys to Render on push to `main` branch
+- CI checks run on all branches before allowing merge
+- Free tier includes automatic spin-down after 15 minutes of inactivity
+- The vortex loading screen handles backend cold starts gracefully
+
+### Environment Variables
+
+**Backend** (`marketmatch-backend`):
+- `PYTHON_VERSION`: 3.11.0
+- `FLASK_ENV`: production
+
+**Frontend** (`marketmatch-frontend`):
+- `NODE_VERSION`: 18.17.0
+- `REACT_APP_API_URL`: Your backend URL (e.g., https://marketmatch-backend.onrender.com)
+
+For complete deployment instructions, see `RENDER_DEPLOYMENT.md`.
+
 ## 🆘 Troubleshooting
 
 ### Common Issues
