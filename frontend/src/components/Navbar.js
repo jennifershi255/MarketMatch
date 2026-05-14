@@ -47,7 +47,6 @@ const Navbar = () => {
     { path: '/', label: 'Dashboard' },
     { path: '/optimize', label: 'Portfolio Optimizer' },
     { path: '/market-analysis', label: 'Market Analysis' },
-    { path: '/about', label: 'About' },
   ];
 
   const drawer = (
@@ -82,9 +81,9 @@ const Navbar = () => {
           />
           <Typography
             variant="h5"
-            className="gradient-text-animated"
             sx={{
               fontWeight: 800,
+              color: '#00ff88',
             }}
           >
             MarketMatch
@@ -92,13 +91,11 @@ const Navbar = () => {
         </Box>
         <IconButton
           onClick={handleDrawerToggle}
-          className="btn-ripple"
           sx={{
             color: '#00ff88',
-            transition: 'all 0.3s ease',
+            transition: 'all 0.2s ease',
             '&:hover': {
-              background: 'rgba(0, 255, 136, 0.15)',
-              transform: 'rotate(90deg)',
+              background: 'rgba(0, 255, 136, 0.1)',
             },
           }}
         >
@@ -107,34 +104,28 @@ const Navbar = () => {
       </Box>
       
       <List sx={{ flexGrow: 1, pt: 3, px: 2 }}>
-        {navItems.map((item, index) => (
+        {navItems.map((item) => (
           <ListItem
             key={item.path}
             component={Link}
             to={item.path}
             onClick={handleMobileNavClick}
-            className={mounted ? `animate-slide-right delay-${(index + 1) * 100}` : ''}
             sx={{
               mb: 2,
-              borderRadius: 3,
+              borderRadius: 2,
               color: isActive(item.path) ? '#00ff88' : '#b3b3cc',
               background: isActive(item.path) 
-                ? 'rgba(0, 255, 136, 0.15)' 
+                ? 'rgba(0, 255, 136, 0.1)' 
                 : 'transparent',
               border: isActive(item.path) 
-                ? '2px solid rgba(0, 255, 136, 0.4)' 
-                : '2px solid transparent',
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                ? '1px solid rgba(0, 255, 136, 0.3)' 
+                : '1px solid transparent',
+              transition: 'all 0.2s ease',
               textDecoration: 'none',
-              boxShadow: isActive(item.path) 
-                ? '0 4px 20px rgba(0, 255, 136, 0.25)' 
-                : 'none',
               '&:hover': {
                 color: '#00ff88',
-                background: 'rgba(0, 255, 136, 0.15)',
-                borderColor: 'rgba(0, 255, 136, 0.5)',
-                transform: 'translateX(15px) scale(1.02)',
-                boxShadow: '0 6px 24px rgba(0, 255, 136, 0.35)',
+                background: 'rgba(0, 255, 136, 0.1)',
+                borderColor: 'rgba(0, 255, 136, 0.3)',
               },
             }}
           >
@@ -163,12 +154,12 @@ const Navbar = () => {
             : 'rgba(30, 30, 46, 0.7)',
           backdropFilter: 'blur(20px) saturate(180%)',
           borderBottom: trigger 
-            ? '1px solid rgba(0, 255, 136, 0.4)'
+            ? '1px solid rgba(0, 255, 136, 0.3)'
             : '1px solid rgba(255, 255, 255, 0.1)',
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.3s ease',
           boxShadow: trigger 
-            ? '0 8px 32px rgba(0, 255, 136, 0.2), 0 0 60px rgba(0, 255, 136, 0.1)'
-            : '0 4px 30px rgba(0, 0, 0, 0.4)',
+            ? '0 4px 20px rgba(0, 255, 136, 0.15)'
+            : '0 2px 10px rgba(0, 0, 0, 0.3)',
         }}
       >
         <Toolbar sx={{ px: { xs: 2, md: 6 }, py: 1.5 }}>
@@ -178,10 +169,6 @@ const Navbar = () => {
               display: 'flex',
               alignItems: 'center',
               flexGrow: 1,
-              transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&:hover': {
-                transform: 'scale(1.05) translateY(-2px)',
-              },
             }}
           >
             <TrendingUpIcon 
@@ -190,28 +177,18 @@ const Navbar = () => {
                 fontSize: 36,
                 color: '#00ff88',
                 filter: 'drop-shadow(0 0 12px rgba(0, 255, 136, 0.7))',
-                animation: mounted ? 'float 3s ease-in-out infinite' : 'none',
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  filter: 'drop-shadow(0 0 20px rgba(0, 255, 136, 1))',
-                },
               }} 
             />
             <Typography
               variant="h5"
               component={Link}
               to="/"
-              className={mounted ? 'gradient-text-animated' : ''}
               sx={{
                 textDecoration: 'none',
                 fontWeight: 800,
                 fontSize: { xs: '1.3rem', sm: '1.6rem' },
                 letterSpacing: '0.5px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  filter: 'drop-shadow(0 0 20px rgba(0, 255, 136, 0.5))',
-                },
+                color: '#00ff88',
               }}
             >
               MarketMatch
@@ -221,13 +198,12 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           {!isMobile && (
             <Box sx={{ display: 'flex', gap: 1.5, ml: 'auto' }}>
-              {navItems.map((item, index) => (
+              {navItems.map((item) => (
                 <Button
                   key={item.path}
                   color="inherit"
                   component={Link}
                   to={item.path}
-                  className={`btn-ripple ${mounted ? `animate-slide-right delay-${(index + 1) * 100}` : ''}`}
                   sx={{
                     color: isActive(item.path) ? '#00ff88' : '#b3b3cc',
                     fontWeight: isActive(item.path) ? 700 : 600,
@@ -235,57 +211,17 @@ const Navbar = () => {
                     padding: '10px 24px',
                     borderRadius: '12px',
                     textTransform: 'none',
-                    position: 'relative',
-                    overflow: 'hidden',
                     border: isActive(item.path) 
-                      ? '2px solid rgba(0, 255, 136, 0.4)' 
-                      : '2px solid transparent',
+                      ? '1px solid rgba(0, 255, 136, 0.3)' 
+                      : '1px solid transparent',
                     background: isActive(item.path) 
-                      ? 'rgba(0, 255, 136, 0.15)' 
+                      ? 'rgba(0, 255, 136, 0.1)' 
                       : 'transparent',
-                    backdropFilter: isActive(item.path) ? 'blur(10px)' : 'none',
-                    boxShadow: isActive(item.path) 
-                      ? '0 4px 20px rgba(0, 255, 136, 0.25)' 
-                      : 'none',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: '-100%',
-                      width: '100%',
-                      height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.2), transparent)',
-                      transition: 'left 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                    },
+                    transition: 'all 0.2s ease',
                     '&:hover': {
                       color: '#00ff88',
-                      backgroundColor: 'rgba(0, 255, 136, 0.15)',
-                      borderColor: 'rgba(0, 255, 136, 0.5)',
-                      boxShadow: '0 6px 24px rgba(0, 255, 136, 0.35)',
-                      transform: 'translateY(-3px) scale(1.05)',
-                      '&::before': {
-                        left: '100%',
-                      },
-                    },
-                    '&:active': {
-                      transform: 'translateY(-1px) scale(1.02)',
-                    },
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      bottom: 0,
-                      left: '50%',
-                      width: isActive(item.path) ? '80%' : '0%',
-                      height: '3px',
-                      background: 'linear-gradient(90deg, #00ff88 0%, #00ccff 100%)',
-                      transform: 'translateX(-50%)',
-                      transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                      borderRadius: '2px',
-                      boxShadow: '0 0 10px rgba(0, 255, 136, 0.8)',
-                    },
-                    '&:hover::after': {
-                      width: '80%',
+                      backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                      borderColor: 'rgba(0, 255, 136, 0.3)',
                     },
                   }}
                 >
@@ -302,18 +238,15 @@ const Navbar = () => {
               aria-label="open drawer"
               edge="end"
               onClick={handleDrawerToggle}
-              className="btn-ripple"
               sx={{
                 ml: 'auto',
                 color: '#00ff88',
-                border: '2px solid rgba(0, 255, 136, 0.4)',
-                borderRadius: 3,
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                border: '1px solid rgba(0, 255, 136, 0.3)',
+                borderRadius: 2,
+                transition: 'all 0.2s ease',
                 '&:hover': {
-                  background: 'rgba(0, 255, 136, 0.15)',
-                  borderColor: '#00ff88',
-                  boxShadow: '0 4px 20px rgba(0, 255, 136, 0.4)',
-                  transform: 'scale(1.1)',
+                  background: 'rgba(0, 255, 136, 0.1)',
+                  borderColor: 'rgba(0, 255, 136, 0.5)',
                 },
               }}
             >
@@ -329,11 +262,10 @@ const Navbar = () => {
             bottom: 0,
             left: 0,
             width: '100%',
-            height: '2px',
-            background: 'linear-gradient(90deg, transparent, #00ff88, #00ccff, #00ff88, transparent)',
+            height: '1px',
+            background: 'rgba(0, 255, 136, 0.2)',
             opacity: trigger ? 1 : 0,
-            transition: 'opacity 0.4s ease',
-            boxShadow: '0 0 20px rgba(0, 255, 136, 0.5)',
+            transition: 'opacity 0.3s ease',
           }}
         />
       </AppBar>

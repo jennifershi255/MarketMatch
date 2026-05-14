@@ -8,7 +8,6 @@ import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import PortfolioOptimizer from './pages/PortfolioOptimizer';
 import MarketAnalysis from './pages/MarketAnalysis';
-import About from './pages/About';
 
 const theme = createTheme({
   palette: {
@@ -379,7 +378,6 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/optimize" element={<PortfolioOptimizer />} />
               <Route path="/market-analysis" element={<MarketAnalysis />} />
-              <Route path="/about" element={<About />} />
             </Routes>
           </Box>
         </Box>
