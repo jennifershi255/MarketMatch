@@ -679,7 +679,7 @@ const Dashboard = () => {
                 color: 'text.primary',
               }}
             >
-              Our Methodology
+              Methodology
             </Typography>
             
             <Grid container spacing={4} sx={{ mb: 8 }}>

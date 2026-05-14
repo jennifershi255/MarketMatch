@@ -199,7 +199,7 @@ const About = () => {
             color: 'text.primary',
           }}
         >
-          Our Methodology
+          Methodology
         </Typography>
         
         <Grid container spacing={4}>

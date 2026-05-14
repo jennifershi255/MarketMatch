@@ -23,8 +23,15 @@ CORS(app, resources={
 
 class MarketMatchAnalyzer:
     def __init__(self):
-        self.start_date = '2021-01-01'
-        self.end_date = '2024-11-02'
+        from datetime import datetime, timedelta
+        
+        # Use dynamic dates - last 12 months from today
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=365)
+        
+        self.end_date = end_date.strftime('%Y-%m-%d')
+        self.start_date = start_date.strftime('%Y-%m-%d')
+        
         self.market_value_weight = 1
         self.returns_weight = 0.001
         self.tracking_error_weight = 0.1
@@ -60,31 +67,45 @@ class MarketMatchAnalyzer:
                 
                 # Get basic info and recent history in one call
                 info = ticker.info
-                history = ticker.history(period='1mo')  # Just 1 month for speed
+                
+                # If info is empty or invalid, skip
+                if not info or info == {}:
+                    removed_stocks.append(f"{ticker_symbol} - no info available")
+                    continue
+                
+                history = ticker.history(period='5d')  # Just 5 days for speed
                 
                 # Checking if it is delisted or has no recent data
-                if history.empty or len(history) < 5:
+                if history.empty or len(history) < 2:
                     removed_stocks.append(f"{ticker_symbol} - delisted or no recent data")
                     continue
                 
-                # Check if the currency is in USD or CAD
-                currency = info.get('currency', 'Unknown')
-                if currency not in ['USD', 'CAD']:
+                # Check if the currency is in USD or CAD - be more lenient
+                currency = info.get('currency', 'USD')  # Default to USD if not specified
+                if currency not in ['USD', 'CAD', 'Unknown', None]:
                     removed_stocks.append(f"{ticker_symbol} - wrong currency ({currency})")
                     continue
                 
-                # Quick volume check using recent average
+                # More lenient volume check
                 avg_volume = history['Volume'].mean()
-                if avg_volume < 100000:
+                if avg_volume < 50000:  # Reduced from 100000
                     removed_stocks.append(f"{ticker_symbol} - low volume ({avg_volume:,.0f})")
                     continue
                 
                 # If it passes all tests, keep it
                 filtered_tickers.append(ticker_symbol)
+                print(f"✅ {ticker_symbol} passed all filters")
                 
             except Exception as e:
-                removed_stocks.append(f"{ticker_symbol} - error: {str(e)}")
+                error_msg = str(e)
+                # If it's just a network error, keep the ticker anyway
+                if 'connect' in error_msg.lower() or 'network' in error_msg.lower() or 'timeout' in error_msg.lower():
+                    filtered_tickers.append(ticker_symbol)
+                    print(f"⚠️  {ticker_symbol} - network issue but keeping it: {error_msg[:100]}")
+                else:
+                    removed_stocks.append(f"{ticker_symbol} - error: {error_msg[:100]}")
         
+        print(f"✅ Filtering complete: {len(filtered_tickers)} accepted, {len(removed_stocks)} removed")
         return filtered_tickers, removed_stocks
     
     def get_market_data(self):
@@ -206,8 +227,13 @@ class MarketMatchAnalyzer:
         
         return df
 
-    def backtest_portfolio(self, weighted_portfolio: pd.DataFrame, start_date: str = '2021-01-01', end_date: str = '2024-11-02') -> dict:
-        """Compute a 3-year backtest of the weighted portfolio (monthly)."""
+    def backtest_portfolio(self, weighted_portfolio: pd.DataFrame, start_date: str = None, end_date: str = None) -> dict:
+        """Compute a 1-year backtest of the weighted portfolio (monthly)."""
+        # Use instance dates if not provided
+        if start_date is None:
+            start_date = self.start_date
+        if end_date is None:
+            end_date = self.end_date
         try:
             if weighted_portfolio.empty:
                 return {"error": "Empty portfolio for backtest"}
