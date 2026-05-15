@@ -1,30 +1,37 @@
-// API Configuration - Updated for deployment fix
+// API Configuration
 let API_BASE_URL;
 
-// Detect if we're on any Vercel domain (production or preview)
-const isVercelDeployment = typeof window !== 'undefined' && (
-  window.location.hostname.includes('vercel.app') ||
-  window.location.hostname.includes('.vercel.app') ||
-  window.location.hostname === 'market-match-app.vercel.app' ||
-  window.location.hostname.includes('jennifers-projects-371c99ef.vercel.app')
+// Detect deployment environment
+const isRenderDeployment = typeof window !== 'undefined' && (
+  window.location.hostname.includes('onrender.com') ||
+  window.location.hostname.includes('.onrender.com')
 );
 
-if (isVercelDeployment) {
-  // Force production URL for all Vercel deployments
+const isVercelDeployment = typeof window !== 'undefined' && (
+  window.location.hostname.includes('vercel.app') ||
+  window.location.hostname.includes('.vercel.app')
+);
+
+if (isRenderDeployment) {
+  // On Render: Frontend and backend are served from the same origin
+  // Use relative URLs (no hostname needed)
+  API_BASE_URL = '';
+  console.log('🚀 Detected Render deployment, using same-origin API (relative URLs)');
+} else if (isVercelDeployment) {
+  // On Vercel: Use production Render backend URL
   API_BASE_URL = 'https://marketmatch-033i.onrender.com';
-  console.log('Detected Vercel deployment, using production API:', API_BASE_URL);
-  console.log('Current hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+  console.log('🚀 Detected Vercel deployment, using production API:', API_BASE_URL);
 } else {
-  // Use environment variable or localhost for development
+  // Local development: Use localhost
   API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-  console.log('Using environment/local API:', API_BASE_URL);
+  console.log('🚀 Using local development API:', API_BASE_URL);
 }
 
 // Debug logging
-console.log('Final API Configuration:');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
-console.log('API_BASE_URL:', API_BASE_URL);
+console.log('API Configuration:');
+console.log('  Environment:', process.env.NODE_ENV);
+console.log('  Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
+console.log('  API Base URL:', API_BASE_URL || '(same origin)');
 
 export const API_ENDPOINTS = {
   HEALTH: `${API_BASE_URL}/api/health`,

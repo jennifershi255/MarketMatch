@@ -1,0 +1,21 @@
+# Render Blueprint Configuration
+# Combined Frontend + Backend Service
+
+services:
+  # Combined Web Service (Flask serving React)
+  - type: web
+    name: marketmatch
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: pip install -r backend/requirements.txt && cd frontend && npm install && npm run build && cd ..
+    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: NODE_VERSION
+        value: 18.17.0
+      - key: FLASK_ENV
+        value: production
+    healthCheckPath: /api/health
