@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Container,
   Typography,
@@ -7,10 +7,6 @@ import {
   CardContent,
   Box,
   Chip,
-  LinearProgress,
-  Alert,
-  Fade,
-  Zoom,
   Button,
 } from '@mui/material';
 import {
@@ -29,28 +25,8 @@ import {
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import axios from 'axios';
-import { API_ENDPOINTS } from '../config/api';
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    fetchMarketData();
-  }, []);
-
-  const fetchMarketData = async () => {
-    try {
-      await axios.get(API_ENDPOINTS.MARKET_DATA);
-      // Market data fetched successfully
-    } catch (err) {
-      setError('Failed to fetch market data');
-      console.error('Market data fetch error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const features = [
     {
@@ -282,52 +258,6 @@ const Dashboard = () => {
 
       {/* Rest of Dashboard Content */}
       <Container maxWidth="xl" sx={{ py: 8, position: 'relative', zIndex: 2 }}>
-        {/* Loading State */}
-        {loading && (
-          <Zoom in={loading} timeout={500}>
-            <Box sx={{ mb: 4 }}>
-              <Card className="futuristic-card glass-effect">
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box className="loading-dots animate-pulse" sx={{ mr: 2 }}>
-                      <Typography variant="h6" color="primary">
-                        Loading market data
-                      </Typography>
-                    </Box>
-                  </Box>
-                  <LinearProgress 
-                    sx={{
-                      height: 8,
-                      borderRadius: 4,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      '& .MuiLinearProgress-bar': {
-                        background: 'linear-gradient(135deg, #00ff88 0%, #00cc6a 100%)',
-                        animation: 'pulse 2s ease-in-out infinite',
-                      },
-                    }}
-                  />
-                </CardContent>
-              </Card>
-            </Box>
-          </Zoom>
-        )}
-
-        {error && (
-          <Fade in={!!error} timeout={500}>
-            <Alert 
-              severity="error" 
-              sx={{ 
-                mb: 4,
-                borderRadius: 2,
-                border: '1px solid rgba(255, 68, 68, 0.3)',
-                background: 'rgba(255, 68, 68, 0.1)',
-              }}
-            >
-              {error}
-            </Alert>
-          </Fade>
-        )}
-
         {/* Features Grid */}
         <AnimatedSection>
           <Typography 
