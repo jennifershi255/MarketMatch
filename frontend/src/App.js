@@ -1,13 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
+import axios from 'axios';
 
 import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import PortfolioOptimizer from './pages/PortfolioOptimizer';
 import MarketAnalysis from './pages/MarketAnalysis';
+import BackendLoadingScreen from './components/BackendLoadingScreen';
+import API_BASE_URL from './config/api';
 
 const theme = createTheme({
   palette: {
@@ -352,6 +355,60 @@ const theme = createTheme({
 });
 
 function App() {
+  const [backendReady, setBackendReady] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState("Connecting to backend...");
+
+  useEffect(() => {
+    const checkBackendHealth = async () => {
+      try {
+        const healthUrl = API_BASE_URL ? `${API_BASE_URL}/api/health` : '/api/health';
+        const response = await axios.get(healthUrl, {
+          timeout: 10000, // 10 second timeout
+        });
+        
+        if (response.status === 200) {
+          setLoadingMessage("Backend connected! Loading app...");
+          setTimeout(() => {
+            setBackendReady(true);
+          }, 500);
+        }
+      } catch (error) {
+        console.log(`Backend not ready yet (attempt ${retryCount + 1})...`, error.message);
+        
+        // Update message based on retry count
+        if (retryCount < 3) {
+          setLoadingMessage("Waking up backend server...");
+        } else if (retryCount < 8) {
+          setLoadingMessage("Backend is starting up, please wait...");
+        } else if (retryCount < 15) {
+          setLoadingMessage("Almost there, hang tight...");
+        } else {
+          setLoadingMessage("Still connecting (free tier takes time)...");
+        }
+        
+        // Retry after delay
+        setTimeout(() => {
+          setRetryCount(prev => prev + 1);
+        }, 3000); // Retry every 3 seconds
+      }
+    };
+
+    if (!backendReady) {
+      checkBackendHealth();
+    }
+  }, [retryCount, backendReady]);
+
+  // Show loading screen while backend is not ready
+  if (!backendReady) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BackendLoadingScreen message={loadingMessage} />
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
