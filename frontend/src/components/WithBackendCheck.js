@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useBackend } from '../App';
 import BackendLoadingScreen from './BackendLoadingScreen';
 
