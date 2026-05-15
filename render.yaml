@@ -9,8 +9,8 @@ services:
     region: oregon
     plan: free
     branch: main
-    buildCommand: pip install -r backend/requirements.txt && cd frontend && npm install && npm run build && cd ..
-    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && gunicorn app:app --bind 0.0.0.0:$PORT --timeout 180
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
