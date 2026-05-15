@@ -75,27 +75,37 @@ class MarketMatchAnalyzer:
                 
                 # Checking if it is delisted or has no recent data
                 if history.empty or len(history) < 5:
-                    removed_stocks.append(f"{ticker_symbol} - delisted or no recent data")
+                    reason = f"{ticker_symbol} - delisted or no recent data (got {len(history)} days)"
+                    removed_stocks.append(reason)
+                    print(f"   ❌ {reason}")
                     continue
                 
                 # Check if the currency is in USD or CAD
                 currency = info.get('currency', 'Unknown')
                 if currency not in ['USD', 'CAD']:
-                    removed_stocks.append(f"{ticker_symbol} - wrong currency ({currency})")
+                    reason = f"{ticker_symbol} - wrong currency ({currency})"
+                    removed_stocks.append(reason)
+                    print(f"   ❌ {reason}")
                     continue
                 
                 # Quick volume check using recent average
                 avg_volume = history['Volume'].mean()
                 if avg_volume < 100000:
-                    removed_stocks.append(f"{ticker_symbol} - low volume ({avg_volume:,.0f})")
+                    reason = f"{ticker_symbol} - low volume ({avg_volume:,.0f})"
+                    removed_stocks.append(reason)
+                    print(f"   ❌ {reason}")
                     continue
                 
                 # If it passes all tests, keep it
                 filtered_tickers.append(ticker_symbol)
+                print(f"   ✅ {ticker_symbol} passed")
                 
             except Exception as e:
-                removed_stocks.append(f"{ticker_symbol} - error: {str(e)}")
+                reason = f"{ticker_symbol} - error: {str(e)}"
+                removed_stocks.append(reason)
+                print(f"   ❌ {reason}")
         
+        print(f"\n✅ Filtering complete: {len(filtered_tickers)} accepted, {len(removed_stocks)} removed")
         return filtered_tickers, removed_stocks
     
     def get_market_data(self):
@@ -568,18 +578,27 @@ def upload_csv():
     except Exception as e:
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
 
-# Serve React App
+# Serve React App (only if build folder exists)
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def serve(path):
     try:
-        # Check if build folder exists
+        # If build folder doesn't exist, return API info for root only
         if not os.path.exists(BUILD_FOLDER):
-            return jsonify({
-                "error": "Build folder not found",
-                "expected_path": BUILD_FOLDER,
-                "help": "React build may not have been created. Check build logs."
-            }), 404
+            if path == '':
+                return jsonify({
+                    "service": "MarketMatch API",
+                    "status": "running",
+                    "endpoints": [
+                        "/api/health",
+                        "/api/market-data",
+                        "/api/optimize-portfolio",
+                        "/api/upload-csv"
+                    ]
+                })
+            else:
+                # For non-root paths, return 404 if build doesn't exist
+                return jsonify({"error": "Frontend build not available"}), 404
         
         # If path exists in build folder, serve it
         if path != "" and os.path.exists(os.path.join(BUILD_FOLDER, path)):
@@ -592,13 +611,11 @@ def serve(path):
         else:
             return jsonify({
                 "error": "index.html not found",
-                "build_folder": BUILD_FOLDER,
-                "files_in_build": os.listdir(BUILD_FOLDER) if os.path.exists(BUILD_FOLDER) else []
+                "build_folder": BUILD_FOLDER
             }), 404
     except Exception as e:
         return jsonify({
             "error": str(e),
-            "build_folder": BUILD_FOLDER,
             "traceback": traceback.format_exc()
         }), 500
 
