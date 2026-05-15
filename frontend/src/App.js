@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -9,8 +9,16 @@ import Navbar from './components/Navbar';
 import Dashboard from './pages/Dashboard';
 import PortfolioOptimizer from './pages/PortfolioOptimizer';
 import MarketAnalysis from './pages/MarketAnalysis';
-import BackendLoadingScreen from './components/BackendLoadingScreen';
+import WithBackendCheck from './components/WithBackendCheck';
 import API_BASE_URL from './config/api';
+
+// Create context for backend status
+export const BackendContext = createContext({
+  backendReady: false,
+  checkingBackend: true,
+});
+
+export const useBackend = () => useContext(BackendContext);
 
 const theme = createTheme({
   palette: {
@@ -356,38 +364,27 @@ const theme = createTheme({
 
 function App() {
   const [backendReady, setBackendReady] = useState(false);
+  const [checkingBackend, setCheckingBackend] = useState(true);
   const [retryCount, setRetryCount] = useState(0);
-  const [loadingMessage, setLoadingMessage] = useState("Connecting to backend...");
 
+  // Start polling backend in background as soon as app loads
   useEffect(() => {
     const checkBackendHealth = async () => {
       try {
         const healthUrl = API_BASE_URL ? `${API_BASE_URL}/api/health` : '/api/health';
         const response = await axios.get(healthUrl, {
-          timeout: 10000, // 10 second timeout
+          timeout: 10000,
         });
         
         if (response.status === 200) {
-          setLoadingMessage("Backend connected! Loading app...");
-          setTimeout(() => {
-            setBackendReady(true);
-          }, 500);
+          console.log('✅ Backend is ready!');
+          setBackendReady(true);
+          setCheckingBackend(false);
         }
       } catch (error) {
-        console.log(`Backend not ready yet (attempt ${retryCount + 1})...`, error.message);
+        console.log(`🔄 Backend waking up... (attempt ${retryCount + 1})`);
         
-        // Update message based on retry count
-        if (retryCount < 3) {
-          setLoadingMessage("Waking up backend server...");
-        } else if (retryCount < 8) {
-          setLoadingMessage("Backend is starting up, please wait...");
-        } else if (retryCount < 15) {
-          setLoadingMessage("Almost there, hang tight...");
-        } else {
-          setLoadingMessage("Still connecting (free tier takes time)...");
-        }
-        
-        // Retry after delay
+        // Keep retrying in background
         setTimeout(() => {
           setRetryCount(prev => prev + 1);
         }, 3000); // Retry every 3 seconds
@@ -399,47 +396,47 @@ function App() {
     }
   }, [retryCount, backendReady]);
 
-  // Show loading screen while backend is not ready
-  if (!backendReady) {
-    return (
+  return (
+    <BackendContext.Provider value={{ backendReady, checkingBackend }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <BackendLoadingScreen message={loadingMessage} />
-      </ThemeProvider>
-    );
-  }
-
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <div className="matrix-bg"></div>
-      <Box className="hero-gradient-bg" sx={{ minHeight: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
-        {/* Global Floating Orbs */}
-        <div className="floating-orb floating-orb-1"></div>
-        <div className="floating-orb floating-orb-2"></div>
-        <div className="floating-orb floating-orb-3"></div>
-      </Box>
-      <Router>
-        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
-          <Navbar />
-          <Box 
-            component="main" 
-            sx={{ 
-              flexGrow: 1, 
-              p: 3,
-              background: 'transparent',
-              position: 'relative',
-            }}
-          >
+        <div className="matrix-bg"></div>
+        <Box className="hero-gradient-bg" sx={{ minHeight: '100vh', position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}>
+          {/* Global Floating Orbs */}
+          <div className="floating-orb floating-orb-1"></div>
+          <div className="floating-orb floating-orb-2"></div>
+          <div className="floating-orb floating-orb-3"></div>
+        </Box>
+        <Router>
+          <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+            <Navbar />
+            <Box 
+              component="main" 
+              sx={{ 
+                flexGrow: 1, 
+                p: 3,
+                background: 'transparent',
+                position: 'relative',
+              }}
+            >
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/optimize" element={<PortfolioOptimizer />} />
-              <Route path="/market-analysis" element={<MarketAnalysis />} />
+              <Route path="/optimize" element={
+                <WithBackendCheck>
+                  <PortfolioOptimizer />
+                </WithBackendCheck>
+              } />
+              <Route path="/market-analysis" element={
+                <WithBackendCheck>
+                  <MarketAnalysis />
+                </WithBackendCheck>
+              } />
             </Routes>
+            </Box>
           </Box>
-        </Box>
-      </Router>
-    </ThemeProvider>
+        </Router>
+      </ThemeProvider>
+    </BackendContext.Provider>
   );
 }
 
