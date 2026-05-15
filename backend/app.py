@@ -59,6 +59,7 @@ class MarketMatchAnalyzer:
     
     def remove_unwanted(self, tickers_list):
         """Filter out unwanted stocks based on criteria - matches original notebook"""
+        import time
         filtered_tickers = []
         removed_stocks = []
         
@@ -66,6 +67,11 @@ class MarketMatchAnalyzer:
         for i, ticker_symbol in enumerate(tickers_list):
             if i % 3 == 0:
                 print(f"📊 Processing ticker {i+1}/{len(tickers_list)}: {ticker_symbol}")
+            
+            # Add delay to avoid rate limiting (0.5 seconds between requests)
+            if i > 0:
+                time.sleep(0.5)
+            
             try:
                 ticker = yf.Ticker(ticker_symbol)
                 
@@ -101,7 +107,28 @@ class MarketMatchAnalyzer:
                 print(f"   ✅ {ticker_symbol} passed")
                 
             except Exception as e:
-                reason = f"{ticker_symbol} - error: {str(e)}"
+                error_str = str(e)
+                # If rate limited, try one retry after waiting
+                if "Rate limited" in error_str or "Too Many Requests" in error_str:
+                    print(f"   ⚠️  {ticker_symbol} - rate limited, retrying after 2s...")
+                    time.sleep(2)
+                    try:
+                        ticker = yf.Ticker(ticker_symbol)
+                        info = ticker.info
+                        history = ticker.history(period='1mo')
+                        
+                        if not history.empty and len(history) >= 5:
+                            currency = info.get('currency', 'Unknown')
+                            if currency in ['USD', 'CAD']:
+                                avg_volume = history['Volume'].mean()
+                                if avg_volume >= 100000:
+                                    filtered_tickers.append(ticker_symbol)
+                                    print(f"   ✅ {ticker_symbol} passed (after retry)")
+                                    continue
+                    except:
+                        pass
+                
+                reason = f"{ticker_symbol} - error: {error_str}"
                 removed_stocks.append(reason)
                 print(f"   ❌ {reason}")
         
@@ -133,12 +160,17 @@ class MarketMatchAnalyzer:
     
     def rate_stocks(self, tickers_list):
         """Rate stocks based on market cap, returns, and tracking error"""
+        import time
         market_data, _, _ = self.get_market_data()
         market_returns = market_data['Total_Returns'].mean()
         
         ratings_data = []
         
-        for ticker_symbol in tickers_list:
+        for i, ticker_symbol in enumerate(tickers_list):
+            # Add delay to avoid rate limiting
+            if i > 0:
+                time.sleep(0.5)
+            
             try:
                 ticker = yf.Ticker(ticker_symbol)
                 stock_data = ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
@@ -179,6 +211,36 @@ class MarketMatchAnalyzer:
                 
             except Exception as e:
                 print(f"Error processing {ticker_symbol}: {str(e)}")
+                # Retry once if rate limited
+                if "Rate limited" in str(e) or "Too Many Requests" in str(e):
+                    time.sleep(2)
+                    try:
+                        ticker = yf.Ticker(ticker_symbol)
+                        stock_data = ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
+                        if not stock_data.empty:
+                            stock_returns_df = stock_data.ffill().pct_change().dropna()
+                            market_cap = ticker.fast_info.get('marketCap', 0)
+                            market_value_score = market_cap / self.total_market_value if market_cap else 0
+                            stock_returns = stock_returns_df['Close'].mean()
+                            returns_diff = abs(stock_returns - market_returns)
+                            returns_score = 1 / returns_diff if returns_diff > 0 else 0
+                            tracking_error = (stock_returns_df['Close'] - market_returns).std()
+                            tracking_error_score = 1 / tracking_error if tracking_error > 0 else 0
+                            rating = (market_value_score * self.market_value_weight + 
+                                     returns_score * self.returns_weight + 
+                                     tracking_error_score * self.tracking_error_weight)
+                            ratings_data.append({
+                                'Ticker': ticker_symbol,
+                                'Market_Value_Score': market_value_score,
+                                'Returns_Score': returns_score,
+                                'Tracking_Error_Score': tracking_error_score,
+                                'Rating': rating,
+                                'Market_Cap': market_cap,
+                                'Stock_Returns': stock_returns,
+                                'Tracking_Error': tracking_error
+                            })
+                    except:
+                        pass
                 continue
         
         df = pd.DataFrame(ratings_data)
