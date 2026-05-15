@@ -34,15 +34,8 @@ CORS(app, resources={
 
 class MarketMatchAnalyzer:
     def __init__(self):
-        from datetime import datetime, timedelta
-        
-        # Use 3 years for both validation and backtest
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=365*3)
-        
-        self.end_date = end_date.strftime('%Y-%m-%d')
-        self.start_date = start_date.strftime('%Y-%m-%d')
-        
+        self.start_date = '2021-01-01'
+        self.end_date = '2024-11-02'
         self.market_value_weight = 1
         self.returns_weight = 0.001
         self.tracking_error_weight = 0.1
@@ -78,45 +71,31 @@ class MarketMatchAnalyzer:
                 
                 # Get basic info and recent history in one call
                 info = ticker.info
-                
-                # If info is empty or invalid, skip
-                if not info or info == {}:
-                    removed_stocks.append(f"{ticker_symbol} - no info available")
-                    continue
-                
-                history = ticker.history(period='5d')  # Just 5 days for speed
+                history = ticker.history(period='1mo')  # Just 1 month for speed
                 
                 # Checking if it is delisted or has no recent data
-                if history.empty or len(history) < 2:
+                if history.empty or len(history) < 5:
                     removed_stocks.append(f"{ticker_symbol} - delisted or no recent data")
                     continue
                 
-                # Check if the currency is in USD or CAD - be more lenient
-                currency = info.get('currency', 'USD')  # Default to USD if not specified
-                if currency not in ['USD', 'CAD', 'Unknown', None]:
+                # Check if the currency is in USD or CAD
+                currency = info.get('currency', 'Unknown')
+                if currency not in ['USD', 'CAD']:
                     removed_stocks.append(f"{ticker_symbol} - wrong currency ({currency})")
                     continue
                 
-                # More lenient volume check
+                # Quick volume check using recent average
                 avg_volume = history['Volume'].mean()
-                if avg_volume < 50000:  # Reduced from 100000
+                if avg_volume < 100000:
                     removed_stocks.append(f"{ticker_symbol} - low volume ({avg_volume:,.0f})")
                     continue
                 
                 # If it passes all tests, keep it
                 filtered_tickers.append(ticker_symbol)
-                print(f"✅ {ticker_symbol} passed all filters")
                 
             except Exception as e:
-                error_msg = str(e)
-                # If it's just a network error, keep the ticker anyway
-                if 'connect' in error_msg.lower() or 'network' in error_msg.lower() or 'timeout' in error_msg.lower():
-                    filtered_tickers.append(ticker_symbol)
-                    print(f"⚠️  {ticker_symbol} - network issue but keeping it: {error_msg[:100]}")
-                else:
-                    removed_stocks.append(f"{ticker_symbol} - error: {error_msg[:100]}")
+                removed_stocks.append(f"{ticker_symbol} - error: {str(e)}")
         
-        print(f"✅ Filtering complete: {len(filtered_tickers)} accepted, {len(removed_stocks)} removed")
         return filtered_tickers, removed_stocks
     
     def get_market_data(self):
@@ -148,82 +127,28 @@ class MarketMatchAnalyzer:
         market_returns = market_data['Total_Returns'].mean()
         
         ratings_data = []
-        failed_tickers = []
         
-        print(f"📊 Starting to rate {len(tickers_list)} stocks...")
-        print(f"Tickers to rate: {tickers_list}")
-        
-        for i, ticker_symbol in enumerate(tickers_list):
+        for ticker_symbol in tickers_list:
             try:
-                print(f"\n[{i+1}/{len(tickers_list)}] Processing {ticker_symbol}...")
                 ticker = yf.Ticker(ticker_symbol)
+                stock_data = ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
                 
-                # Try to get stock data with retries
-                stock_data = None
-                for attempt in range(2):
-                    try:
-                        stock_data = ticker.history(start=self.start_date, end=self.end_date, interval='1mo')[['Close']]
-                        if not stock_data.empty:
-                            break
-                    except Exception as e:
-                        if attempt == 0:
-                            print(f"   Retry attempt {attempt + 1} for {ticker_symbol}")
-                            continue
-                        raise e
-                
-                if stock_data is None or stock_data.empty or len(stock_data) < 3:
-                    failed_tickers.append(f"{ticker_symbol} - insufficient price data (only {len(stock_data) if stock_data is not None else 0} months)")
-                    print(f"   ⚠️  FAILED: insufficient data")
+                if stock_data.empty:
                     continue
                 
                 stock_returns_df = stock_data.ffill().pct_change().dropna()
                 
-                if stock_returns_df.empty:
-                    failed_tickers.append(f"{ticker_symbol} - no returns data after processing")
-                    print(f"   ⚠️  FAILED: no returns")
-                    continue
-                
-                # Market value score - try multiple methods
-                market_cap = 0
-                try:
-                    market_cap = ticker.fast_info.get('marketCap', None)
-                except:
-                    pass
-                
-                if market_cap is None or market_cap == 0:
-                    try:
-                        info = ticker.info
-                        market_cap = info.get('marketCap', 0)
-                    except:
-                        pass
-                
-                # If still no market cap, use a default based on stock price
-                if market_cap == 0:
-                    try:
-                        last_price = stock_data['Close'].iloc[-1]
-                        market_cap = last_price * 1000000000  # Assume 1B shares as rough estimate
-                        print(f"   ⚠️  Using estimated market cap for {ticker_symbol}")
-                    except:
-                        market_cap = 1000000000  # 1B default
-                
-                market_value_score = market_cap / self.total_market_value if market_cap else 0.000001
+                # Market value score
+                market_cap = ticker.fast_info.get('marketCap', 0)
+                market_value_score = market_cap / self.total_market_value if market_cap else 0
                 
                 # Returns score
                 stock_returns = stock_returns_df['Close'].mean()
-                if np.isnan(stock_returns) or np.isinf(stock_returns):
-                    failed_tickers.append(f"{ticker_symbol} - invalid returns (NaN or Inf)")
-                    print(f"   ⚠️  FAILED: invalid returns")
-                    continue
-                    
                 returns_diff = abs(stock_returns - market_returns)
-                if returns_diff == 0:
-                    returns_diff = 0.0001
-                returns_score = 1 / returns_diff
+                returns_score = 1 / returns_diff if returns_diff > 0 else 0
                 
                 # Tracking error score
                 tracking_error = (stock_returns_df['Close'] - market_returns).std()
-                if np.isnan(tracking_error) or tracking_error == 0:
-                    tracking_error = 0.01  # Small default value
                 tracking_error_score = 1 / tracking_error if tracking_error > 0 else 0
                 
                 # Overall rating
@@ -241,23 +166,10 @@ class MarketMatchAnalyzer:
                     'Stock_Returns': stock_returns,
                     'Tracking_Error': tracking_error
                 })
-                print(f"   ✅ SUCCESS: Rating = {rating:.10f}, Market Cap = ${market_cap:,.0f}")
                 
             except Exception as e:
-                error_msg = str(e)[:200]
-                failed_tickers.append(f"{ticker_symbol} - error: {error_msg}")
-                print(f"   ❌ ERROR: {error_msg}")
+                print(f"Error processing {ticker_symbol}: {str(e)}")
                 continue
-        
-        print(f"\n{'='*60}")
-        print(f"RATING SUMMARY:")
-        print(f"  ✅ Successfully rated: {len(ratings_data)} stocks")
-        print(f"  ❌ Failed: {len(failed_tickers)} stocks")
-        if failed_tickers:
-            print(f"\nFailed tickers details:")
-            for failed in failed_tickers:
-                print(f"  - {failed}")
-        print(f"{'='*60}\n")
         
         df = pd.DataFrame(ratings_data)
         return df.sort_values(by='Rating', ascending=False) if not df.empty else df
@@ -305,13 +217,8 @@ class MarketMatchAnalyzer:
         
         return df
 
-    def backtest_portfolio(self, weighted_portfolio: pd.DataFrame, start_date: str = None, end_date: str = None) -> dict:
+    def backtest_portfolio(self, weighted_portfolio: pd.DataFrame, start_date: str = '2021-01-01', end_date: str = '2024-11-02') -> dict:
         """Compute a 3-year backtest of the weighted portfolio (monthly)."""
-        # Use instance dates if not provided
-        if start_date is None:
-            start_date = self.start_date
-        if end_date is None:
-            end_date = self.end_date
         try:
             if weighted_portfolio.empty:
                 return {"error": "Empty portfolio for backtest"}
@@ -371,7 +278,7 @@ class MarketMatchAnalyzer:
             for comp in portfolio_components[1:]:
                 portfolio_index = portfolio_index.reindex(comp.index, method='ffill')
                 comp = comp.reindex(portfolio_index.index, method='ffill')
-                portfolio_index = (portfolio_index.ffill() + comp.ffill())
+                portfolio_index = (portfolio_index.fillna(method='ffill') + comp.fillna(method='ffill'))
 
             # Normalize portfolio index to start at 1
             portfolio_index = portfolio_index / portfolio_index.iloc[0]
@@ -562,7 +469,7 @@ def optimize_portfolio():
         weighted_portfolio = analyzer.calculate_weights(selected_stocks)
         
         # NEW: Backtest over 3 years
-        backtest = analyzer.backtest_portfolio(weighted_portfolio)
+        backtest = analyzer.backtest_portfolio(weighted_portfolio, analyzer.start_date, analyzer.end_date)
         
         # Step 5: Calculate performance snapshot
         portfolio_result, total_fees = analyzer.calculate_portfolio_performance(weighted_portfolio, budget)

@@ -141,7 +141,7 @@ const MarketAnalysis = () => {
                 {marketData?.performance?.sp500_return?.toFixed(2)}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                1-Year Total Return
+                3-Year Total Return
               </Typography>
             </CardContent>
           </Card>
@@ -156,7 +156,7 @@ const MarketAnalysis = () => {
                 {marketData?.performance?.tsx_return?.toFixed(2)}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                1-Year Total Return
+                3-Year Total Return
               </Typography>
             </CardContent>
           </Card>
@@ -171,7 +171,7 @@ const MarketAnalysis = () => {
                 {marketData?.performance?.avg_return?.toFixed(2)}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                1-Year Total Return
+                3-Year Total Return
               </Typography>
             </CardContent>
           </Card>
