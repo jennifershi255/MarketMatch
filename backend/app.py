@@ -306,7 +306,7 @@ class MarketMatchAnalyzer:
             # Normalize indices
             sp500_idx = sp500['Close'] / sp500['Close'].iloc[0]
             tsx_idx = tsx['Close'] / tsx['Close'].iloc[0]
-            blended_idx = (sp500_idx.reindex(tsx_idx.index, method='ffill').dropna() + tsx_idx) / 2
+            blended_idx = (sp500_idx.reindex(tsx_idx.index).ffill().dropna() + tsx_idx) / 2
 
             # CAD/USD exchange rate (monthly)
             fx = yf.Ticker('CADUSD=X').history(start=start_date, end=end_date, interval='1mo')[['Close']]
@@ -348,9 +348,9 @@ class MarketMatchAnalyzer:
             # Sum weighted components
             portfolio_index = portfolio_components[0]
             for comp in portfolio_components[1:]:
-                portfolio_index = portfolio_index.reindex(comp.index, method='ffill')
-                comp = comp.reindex(portfolio_index.index, method='ffill')
-                portfolio_index = (portfolio_index.fillna(method='ffill') + comp.fillna(method='ffill'))
+                portfolio_index = portfolio_index.reindex(comp.index).ffill()
+                comp = comp.reindex(portfolio_index.index).ffill()
+                portfolio_index = (portfolio_index.ffill() + comp.ffill())
 
             # Normalize portfolio index to start at 1
             portfolio_index = portfolio_index / portfolio_index.iloc[0]
