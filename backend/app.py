@@ -36,7 +36,7 @@ class MarketMatchAnalyzer:
     def __init__(self):
         from datetime import datetime, timedelta
         
-        # Use dynamic dates - last 3 years from today
+        # Use 3 years for both validation and backtest
         end_date = datetime.now()
         start_date = end_date - timedelta(days=365*3)
         
@@ -561,8 +561,8 @@ def optimize_portfolio():
         # Step 4: Calculate weights
         weighted_portfolio = analyzer.calculate_weights(selected_stocks)
         
-        # NEW: Backtest over 1 year
-        backtest = analyzer.backtest_portfolio(weighted_portfolio, analyzer.start_date, analyzer.end_date)
+        # NEW: Backtest over 3 years
+        backtest = analyzer.backtest_portfolio(weighted_portfolio)
         
         # Step 5: Calculate performance snapshot
         portfolio_result, total_fees = analyzer.calculate_portfolio_performance(weighted_portfolio, budget)
