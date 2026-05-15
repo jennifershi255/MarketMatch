@@ -36,9 +36,9 @@ class MarketMatchAnalyzer:
     def __init__(self):
         from datetime import datetime, timedelta
         
-        # Use dynamic dates - last 12 months from today
+        # Use dynamic dates - last 3 years from today
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=365)
+        start_date = end_date - timedelta(days=365*3)
         
         self.end_date = end_date.strftime('%Y-%m-%d')
         self.start_date = start_date.strftime('%Y-%m-%d')
@@ -306,7 +306,7 @@ class MarketMatchAnalyzer:
         return df
 
     def backtest_portfolio(self, weighted_portfolio: pd.DataFrame, start_date: str = None, end_date: str = None) -> dict:
-        """Compute a 1-year backtest of the weighted portfolio (monthly)."""
+        """Compute a 3-year backtest of the weighted portfolio (monthly)."""
         # Use instance dates if not provided
         if start_date is None:
             start_date = self.start_date
@@ -371,7 +371,7 @@ class MarketMatchAnalyzer:
             for comp in portfolio_components[1:]:
                 portfolio_index = portfolio_index.reindex(comp.index, method='ffill')
                 comp = comp.reindex(portfolio_index.index, method='ffill')
-                portfolio_index = (portfolio_index.fillna(method='ffill') + comp.fillna(method='ffill'))
+                portfolio_index = (portfolio_index.ffill() + comp.ffill())
 
             # Normalize portfolio index to start at 1
             portfolio_index = portfolio_index / portfolio_index.iloc[0]

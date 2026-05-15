@@ -529,7 +529,7 @@ const PortfolioOptimizer = () => {
                   <>
                     <Divider sx={{ mb: 2 }} />
                     <Typography variant="h6" gutterBottom>
-                      1-Year Backtest
+                      3-Year Backtest
                     </Typography>
                     <Grid container spacing={2} sx={{ mb: 2 }}>
                       <Grid item xs={12} sm={4}>
@@ -538,7 +538,7 @@ const PortfolioOptimizer = () => {
                             {backtest.portfolio_return_pct}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Portfolio Return (1Y)
+                            Portfolio Return (3Y)
                           </Typography>
                         </Box>
                       </Grid>
@@ -548,7 +548,7 @@ const PortfolioOptimizer = () => {
                             {backtest.blended_return_pct}%
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            Market Return (1Y)
+                            Market Return (3Y)
                           </Typography>
                         </Box>
                       </Grid>
