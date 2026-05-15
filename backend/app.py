@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -9,9 +9,20 @@ import base64
 from datetime import datetime, timedelta
 import traceback
 import warnings
+import os
 warnings.filterwarnings('ignore')
 
-app = Flask(__name__)
+# Get the absolute path to the build folder
+# When running from backend/ directory, go up one level and into frontend/build
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+BUILD_FOLDER = os.path.join(BACKEND_DIR, '..', 'frontend', 'build')
+BUILD_FOLDER = os.path.abspath(BUILD_FOLDER)
+
+print(f"🔍 Backend directory: {BACKEND_DIR}")
+print(f"📁 Looking for React build at: {BUILD_FOLDER}")
+print(f"✓ Build folder exists: {os.path.exists(BUILD_FOLDER)}")
+
+app = Flask(__name__, static_folder=BUILD_FOLDER, static_url_path='')
 CORS(app, resources={
     r"/api/*": {
         "origins": "*",
@@ -452,7 +463,13 @@ analyzer = MarketMatchAnalyzer()
 
 @app.route('/api/health', methods=['GET'])
 def health_check():
-    return jsonify({"status": "healthy", "message": "MarketMatch API is running"})
+    return jsonify({
+        "status": "healthy", 
+        "message": "MarketMatch API is running",
+        "build_folder": BUILD_FOLDER,
+        "build_exists": os.path.exists(BUILD_FOLDER),
+        "build_files": os.listdir(BUILD_FOLDER) if os.path.exists(BUILD_FOLDER) else []
+    })
 
 @app.route('/api/test-cors', methods=['POST', 'OPTIONS'])
 def test_cors():
@@ -643,6 +660,40 @@ def upload_csv():
         
     except Exception as e:
         return jsonify({"error": str(e), "traceback": traceback.format_exc()}), 500
+
+# Serve React App
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    try:
+        # Check if build folder exists
+        if not os.path.exists(BUILD_FOLDER):
+            return jsonify({
+                "error": "Build folder not found",
+                "expected_path": BUILD_FOLDER,
+                "help": "React build may not have been created. Check build logs."
+            }), 404
+        
+        # If path exists in build folder, serve it
+        if path != "" and os.path.exists(os.path.join(BUILD_FOLDER, path)):
+            return send_from_directory(BUILD_FOLDER, path)
+        
+        # Otherwise serve index.html for React Router
+        index_path = os.path.join(BUILD_FOLDER, 'index.html')
+        if os.path.exists(index_path):
+            return send_from_directory(BUILD_FOLDER, 'index.html')
+        else:
+            return jsonify({
+                "error": "index.html not found",
+                "build_folder": BUILD_FOLDER,
+                "files_in_build": os.listdir(BUILD_FOLDER) if os.path.exists(BUILD_FOLDER) else []
+            }), 404
+    except Exception as e:
+        return jsonify({
+            "error": str(e),
+            "build_folder": BUILD_FOLDER,
+            "traceback": traceback.format_exc()
+        }), 500
 
 if __name__ == '__main__':
     import os
