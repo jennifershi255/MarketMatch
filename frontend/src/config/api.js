@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // API Configuration
 let API_BASE_URL;
 
@@ -23,13 +24,15 @@ if (isRenderDeployment) {
   console.log('🚀 Detected Vercel deployment, using production API:', API_BASE_URL);
 } else {
   // Local development: Use localhost
-  API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const envUrl = typeof process !== 'undefined' && process.env ? process.env.REACT_APP_API_URL : null;
+  API_BASE_URL = envUrl || 'http://localhost:5000';
   console.log('🚀 Using local development API:', API_BASE_URL);
 }
 
 // Debug logging
 console.log('API Configuration:');
-console.log('  Environment:', process.env.NODE_ENV);
+const nodeEnv = typeof process !== 'undefined' && process.env ? process.env.NODE_ENV : 'unknown';
+console.log('  Environment:', nodeEnv);
 console.log('  Hostname:', typeof window !== 'undefined' ? window.location.hostname : 'N/A');
 console.log('  API Base URL:', API_BASE_URL || '(same origin)');
 

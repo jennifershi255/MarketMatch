@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Container,
   Typography,
@@ -9,6 +8,7 @@ import {
   Chip,
   Button,
 } from '@mui/material';
+import PropTypes from 'prop-types';
 import {
   TrendingUp,
   Assessment,
@@ -226,7 +226,7 @@ const Dashboard = () => {
                       },
                     }}
                   >
-                    Let's Start
+                    Let&apos;s Start
                   </Button>
                   <Button
                     onClick={handleScrollToHow}
@@ -831,7 +831,7 @@ const Dashboard = () => {
                 <Grid container spacing={4}>
                   {[
                     {
-                      value: '98%+',
+                      value: '80%+',
                       label: 'Correlation with Market Indices',
                       color: '#00ff88',
                       icon: <Security sx={{ fontSize: 48 }} />
@@ -924,6 +924,10 @@ const AnimatedSection = ({ children }) => {
       {children}
     </motion.div>
   );
+};
+
+AnimatedSection.propTypes = {
+  children: PropTypes.node.isRequired
 };
 
 export default Dashboard; 
