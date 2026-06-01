@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   PieChart,
   Pie,
@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { Box, Grid, Typography, Card, CardContent, Fade } from '@mui/material';
+import PropTypes from 'prop-types';
 
 const COLORS = [
   '#00ff88', '#00ccff', '#ffaa00', '#ff4444', '#8c5cf6', 
@@ -333,6 +334,18 @@ const PortfolioChart = ({ data }) => {
       </Grid>
     </Fade>
   );
+};
+
+PortfolioChart.propTypes = {
+  data: PropTypes.arrayOf(
+    PropTypes.shape({
+      Ticker: PropTypes.string,
+      Weight: PropTypes.number,
+      Value: PropTypes.number,
+      Shares: PropTypes.number,
+      Price: PropTypes.number
+    })
+  ).isRequired
 };
 
 export default PortfolioChart; 

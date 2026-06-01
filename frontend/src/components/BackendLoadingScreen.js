@@ -1,5 +1,5 @@
-import React from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
+import PropTypes from 'prop-types';
 
 const BackendLoadingScreen = ({ message = "Connecting to backend..." }) => {
   return (
@@ -59,11 +59,15 @@ const BackendLoadingScreen = ({ message = "Connecting to backend..." }) => {
             fontSize: '0.75rem',
           }}
         >
-          this is what happens when you optimize for cost, not performance (hire me and I'll optimize both)
+          this is what happens when you optimize for cost, not performance (hire me and I&apos;ll optimize both)
         </Typography>
       </Box>
     </Box>
   );
+};
+
+BackendLoadingScreen.propTypes = {
+  message: PropTypes.string
 };
 
 export default BackendLoadingScreen;

@@ -1,6 +1,6 @@
-import React from 'react';
 import { useBackend } from '../App';
 import BackendLoadingScreen from './BackendLoadingScreen';
+import PropTypes from 'prop-types';
 
 const WithBackendCheck = ({ children }) => {
   const { backendReady, checkingBackend } = useBackend();
@@ -16,6 +16,10 @@ const WithBackendCheck = ({ children }) => {
 
   // Backend is ready, show the actual page
   return children;
+};
+
+WithBackendCheck.propTypes = {
+  children: PropTypes.node.isRequired
 };
 
 export default WithBackendCheck;

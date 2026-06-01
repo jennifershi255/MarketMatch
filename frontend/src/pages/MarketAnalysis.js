@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import {
   Container,
   Typography,
@@ -85,7 +86,7 @@ const MarketAnalysis = () => {
   })) : [];
 
   // Calculate normalized data (relative to first value)
-  const normalizedData = chartData.length > 0 ? chartData.map((item, index) => {
+  const normalizedData = chartData.length > 0 ? chartData.map((item) => {
     const firstSP500 = chartData[0].sp500;
     const firstTSX = chartData[0].tsx;
     return {
@@ -121,6 +122,12 @@ const MarketAnalysis = () => {
       );
     }
     return null;
+  };
+
+  CustomTooltip.propTypes = {
+    active: PropTypes.bool,
+    payload: PropTypes.array,
+    label: PropTypes.string
   };
 
   return (
